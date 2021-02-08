@@ -1,0 +1,26 @@
+﻿@using BMR_MVC;
+@model ViewModel
+@if (HttpContext.Current.Session["AUTH_CREATE"].ToString() == "True")
+{
+    <br />
+    <div class="card">
+        <div class="card-header">Import Excel</div>
+        <div class="card-body">
+            @using (Html.BeginForm("TImportExcel", "ImportExcel", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                <input type="file" name="file" />
+                <input type="submit" value="Import to database" class="btn btn-sm btn-primary" />
+
+                //UploadExcel
+
+            }
+            <br />
+            <div>
+                @ViewBag.Success
+            </div>
+        </div>
+    </div>
+}
+else {
+    Response.Redirect("~/Default/Index");
+}

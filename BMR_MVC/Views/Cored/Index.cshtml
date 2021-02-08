@@ -1,0 +1,974 @@
+﻿@{
+    /**/
+
+    ViewBag.Title = "BMR";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<!--Signalr-->
+<script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+<script src="~/signalr/hubs"></script>
+<!--Signalr-->
+<link href="~/Content/jquery.dataTables.min.css" rel="stylesheet" />
+<style type="text/css">
+    td.details-control {
+        background: url('https://datatables.net/examples/resources/details_open.png') no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.shown td.details-control {
+        background: url('https://datatables.net/examples/resources/details_close.png') no-repeat center center;
+    }
+
+    .padding-0 {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+    #bt_collapse {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        margin-right: 10px;
+        margin-bottom: 10px
+    }
+
+    .btn-circle {
+        height: 50px;
+        width: 50px;
+        border-radius: 50%;
+        padding: 6px 0px;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.42857;
+    }
+    .progress {
+        position: relative;
+    }
+
+    .progress-bar-title {
+        position: absolute;
+        text-align: center;
+        line-height: 20px; /* line-height should be equal to bar height */
+        overflow: hidden;
+        color: #000000;
+        right: 0;
+        left: 0;
+        top: 0;
+    }
+    .sysid {
+        display: none
+    }
+    .displyhide {
+        display: none;
+    }
+</style>
+<script>
+
+    var chatMx = $.connection.mxSignalR;
+    var chatBcr = $.connection.bcrSignalR;
+    var chatBca = $.connection.bcaSignalR;
+    var chatPk = $.connection.pkSignalR;
+    var authEditCC= '@HttpContext.Current.Session["AUTH_EDIT_CC"].ToString()';
+    var authApprJob= '@HttpContext.Current.Session["AUTH_APPR_JOB_BCR"].ToString()';
+    var authEditJob= '@HttpContext.Current.Session["AUTH_EDIT_JOB"].ToString()';
+    var authCreate = '@HttpContext.Current.Session["AUTH_CREATE"].ToString()';
+    var authRunJob = '@HttpContext.Current.Session["AUTH_RUN_JOB"].ToString()';
+    var authMXCCClean = '@HttpContext.Current.Session["AUTH_MIXING_CC_CLEAN"].ToString()';
+    var authMXCCCheck = '@HttpContext.Current.Session["AUTH_MIXING_CC_CHECK"].ToString()';
+    var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+    var authMXCheck = '@HttpContext.Current.Session["AUTH_MIXING_CHECK"].ToString()';
+    var groupIdAll = ('@HttpContext.Current.Session["GROUP_ID_ALL"].ToString()').split('|');
+
+    function format(d) {
+
+
+
+        var divCleanControl = '';
+        var divBcr = '';
+        var ccrRunNo = d.ccrRunNo.split('|');
+        var ccrEquipmentNo = d.ccrEquipmentNo.split('|');
+        var ccrEquipmentName = d.ccrEquipmentName.split('|');
+        var ccrCleanUserName = d.ccrCleanUserName.split('|');
+        var ccrCleanDt = d.ccrCleanDt.split('|');
+        var ccrCheckUserName = d.ccrCheckUserName.split('|');
+        var bcrOperateUserName = d.bcrOperateUserName.split('|');
+        var bcrCheckUserName = d.bcrCheckUserName.split('|');
+        var bcrOperateDt = d.bcrOperateDt.split('|');
+        var bcrCheckDt = d.bcrCheckDt.split('|');
+        var ccrCheckDt = d.ccrCheckDt.split('|');
+        var bcrStep = d.bcrStep.split('|');
+        var bcrRunNo = d.bcrRunNo.split('|');
+        var bcrStepDesc = d.bcrStepDesc.split('|');
+
+        //Group
+        var ccGroupCleanId = d.ccGroupCleanId.split('|');
+        var ccGroupCheckId = d.ccGroupCheckId.split('|');
+        var bcrGroupOperateId = d.bcrGroupOperateId.split('|');
+        var bcrGroupCheckId = d.bcrGroupCheckId.split('|');
+
+        //REQ
+        var ccrReqImageYn = d.ccrReqImageYn.split('|');
+        var imageYn = d.reqImageYn.split('|');
+        var tempYn = d.reqTempYn.split('|');
+        var pressYn = d.reqPressYn.split('|');
+        var humidityYn = d.reqHumidityYn.split('|');
+        var startStopYn = d.reqStartStopYn.split('|');
+        var weightYn = d.reqWeightYn.split('|');
+        var vaccYn = d.reqVaccYn.split('|');
+        var weightSampleYn = d.reqWeightSampleYn.split('|');
+
+        //Appr
+        var jobApprPd = d.jobApprPd.split('|');
+        var jobApprQa = d.jobApprQa.split('|');
+
+        for (var i = 0; i < ccrRunNo.length; i++) {
+            var CCCleanGroup = jQuery.grep(groupIdAll, function (a) { return a == ccGroupCleanId[i]; }).length
+            var CCCheckGroup = jQuery.grep(groupIdAll, function (a) { return a == ccGroupCheckId[i]; }).length;
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Clean Check
+            var ccCleanChk = '';
+            if (ccrCleanUserName[i].length > 0) {
+                ccCleanChk = '<span class="l-cc-clean">' + ccrCleanUserName[i] + '</span>'
+            }
+            else {
+
+                if (JSON.parse(authMXCCClean.toLowerCase()) == true &&
+                    (CCCleanGroup > 0 || ccGroupCleanId[i].length == 0 || ccGroupCleanId[i]==0) &&
+                    ((ccrCleanUserName[(i - 1) < 0 ? 0 : i - 1].length > 0) &&
+                    (ccrCheckUserName[(i - 1) < 0 ? 0 : i - 1].length > 0) || i == 0)) {
+                    ccCleanChk = '<a href="#" class="l-cc-clean">click</a>';
+                }
+                else {
+                    ccCleanChk = '<span class="l-cc-clean"></span>';
+                }
+            }
+            ///////////////////////////////////////////////////////
+            var ccChkChk = '';
+            if (ccrCheckUserName[i].length > 0) {
+                ccChkChk = '<span class="l-cc-chk">' + ccrCheckUserName[i] + '</span>';
+            }
+            else {
+                if (JSON.parse(authMXCCCheck.toLowerCase()) == true &&
+                    (CCCheckGroup > 0 || ccGroupCheckId[i].length == 0 || ccGroupCheckId[i] == 0) &&
+                    (ccrCheckUserName[(i - 1) < 0 ? 0 : i - 1].length > 0) &&
+                    (ccrCleanUserName[i].length > 0) || (i == 0 && ccrCleanUserName[i].length > 0)) {
+                    ccChkChk = '<a href="#" class="l-cc-chk">click</a>';
+                }
+                else {
+                    ccChkChk = '<span class="l-cc-chk"></span>';
+                }
+            }
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+            divCleanControl += '<div class="row clean-control">' +
+                '<div style="display:none" id="mxs_div_cc_job_sysid" class="mxs-div-cc-job-sysid">' + d.jobSysId + '</div>' +
+                '<div id="mxs_div_cc_item_code" class="mxs-div-cc-item-code" style="display:none">' + d.itemCode + '</div>' +
+                '<div id="mxs_div_cc_item_lot" class="mxs-div-cc-item-lot" style="display:none">' + d.lot + '</div>' +
+                '<div style="width:4%" class="mxs-div-cc-no" id="mxs_div_cc_no">' + ccrRunNo[i] + '</div>' +
+                '<div class="col-1 padding-0" style="white-space:nowrap">' + ccrEquipmentNo[i] + '</div>' +
+                '<div class="col-3 padding-0" style="margin-left:2%">' + ccrEquipmentName[i] + '</div>' +
+                '<div class="col-1">' +
+                '<div class="dropdown">' +
+                '<button type="button" style="' + ((ccrReqImageYn[i] == 'Y' ? 1 : 0) == 0 ? 'display:none' : '') + '" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">Click</button>' +
+                '<div class="dropdown-menu">' +
+                (ccrReqImageYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_cc_adt_image">รูปภาพ</a>' : '') +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div style="display:none" class="div-cc-clean-group-id">' + ccGroupCleanId[i] + '</div>' +
+                '<div style="display:none" class="div-cc-check-group-id">' + ccGroupCheckId[i] + '</div>' +
+                '<div class="col-1 padding-0">' + ccCleanChk + '</div>' +
+                '<div class="col-2 padding-0 mxs-div-cc-clean-dt">' + ccrCleanDt[i] + '</div>' +
+                '<div class="col-1 padding-0">' + ccChkChk + '</div>' +
+                '<div class="col-2 padding-0 mxs-div-cc-dt">' + ccrCheckDt[i] + '</div>' +
+                '</div>' +
+                '<div class="hr-line-dashed clean-control-line"></div>';
+        }
+
+        //Button add cc
+        if (JSON.parse(authEditCC.toLowerCase()) == true && jobApprPd[1] != 1 && jobApprQa[1] != 1) {
+            divCleanControl += '<div class="row">' +
+                '<div><button id="bt_add_clean" class="btn btn-sm btn-info bt-add-clean"><i class="fa fa-plus" aria-hidden="true"></i> เพิ่ม</button></div>&nbsp;&nbsp;' +
+                '<div><button style="display:none" class="btn btn-sm btn-success bt-save-clean"><i class="fa fa-floppy-o" aria-hidden="true"></i> บันทึก</button></div>&nbsp;&nbsp;' +
+                '<div><button style="display:none" class="btn btn-sm btn-danger bt-remove-clean"><i class="fa fa-minus" aria-hidden="true"></i> ลบ</button></div>' +
+                '</div>';
+        }
+
+        for (var i = 0; i < bcrRunNo.length; i++) {
+
+            var bcrOperateGroup = jQuery.grep(groupIdAll, function (a) { return a == bcrGroupOperateId[i]; }).length;
+            var bcrCheckGroup = jQuery.grep(groupIdAll, function (a) { return a == bcrGroupCheckId[i]; }).length;
+            var bcrOperateChk = '';
+            var bcrOperateChkDt = '';
+            var bcrChkChk = '';
+            var bcrChkDt = '';
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+            //Operate Check
+            if (bcrRunNo[i] > 0) {
+
+                if (bcrOperateUserName[i].length > 0) {
+                    bcrOperateChk = '<span class="l-bcr-operate">' + bcrOperateUserName[i] + '</span>';
+                    bcrOperateChkDt = '<span class="mxs-div-operate-dt">' + bcrOperateDt[i] + '</span>';
+                }
+                else {
+
+                    var lengthBfOperate = bcrOperateUserName[(bcrRunNo[(i - 1) < 0 ? 0 : i - 1] == 0 && i > 1 ? i - 2 : ((i - 1) < 0 ? 0 : i - 1))].length;
+                    var lengthBfCheck = bcrCheckUserName[(bcrRunNo[(i - 1) < 0 ? 0 : i - 1] == 0 && i > 1 ? i - 2 : ((i - 1) < 0 ? 0 : i - 1))].length;
+
+                    if (JSON.parse(authMXOperate.toLowerCase()) == true &&
+                        (ccrCheckUserName[ccrCheckUserName.length - 1].length > 0) &&
+                        (bcrOperateGroup > 0 || bcrGroupOperateId[i].length == 0 || bcrGroupOperateId[i] == 0) &&
+                        ((lengthBfOperate > 0 && lengthBfCheck > 0) || (bcrStep[i] == 1 && bcrRunNo[i] == 1))) {
+                        bcrOperateChk = '<a href="#" class="l-bcr-operate">click</a>';
+                        bcrOperateChkDt = '<span class="mxs-div-operate-dt"></span>';
+                    }
+                    else {
+                        bcrOperateChk = '<span class="l-bcr-operate"></span>';
+                        bcrOperateChkDt = '<span class="mxs-div-operate-dt"></span>';
+                    }
+                }
+                ///////////////////////////////////////////////////
+                //Check
+                if (bcrCheckUserName[i].length > 0) {
+                    bcrChkChk = '<span class="l-bcr-chk">' + bcrCheckUserName[i] + '</span>';
+                    bcrChkDt = '<span class="mxs-div-dt">' + bcrCheckDt[i] + '</span>';
+                }
+                else {
+
+                    var lengthBfOperate = bcrOperateUserName[(bcrRunNo[(i - 1) < 0 ? 0 : i - 1] == 0 && i > 1 ? i - 2 : ((i - 1) < 0 ? 0 : i - 1))].length;
+                    var lengthBfCheck = bcrCheckUserName[(bcrRunNo[(i - 1) < 0 ? 0 : i - 1] == 0 && i > 1 ? i - 2 : ((i - 1) < 0 ? 0 : i - 1))].length;
+                    if (JSON.parse(authMXCheck.toLowerCase()) == true &&
+                        (bcrCheckGroup > 0 || bcrGroupCheckId[i].length == 0 || bcrGroupCheckId[i] == 0) &&
+                        (lengthBfOperate > 0 && lengthBfCheck > 0) &&
+                        (bcrOperateUserName[i].length > 0) || (bcrRunNo[i] == 1 == 1 && bcrOperateUserName[i].length > 0)) {
+                        bcrChkChk = '<a href="#" class="l-bcr-chk">click</a>';
+                        bcrChkDt = '<span class="mxs-div-dt"></span>';
+                    }
+                    else {
+                        bcrChkChk = '<span class="l-bcr-chk"></span>';
+                        bcrChkDt = '<span class="mxs-div-dt"></span>';
+                    }
+                }
+            }
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+            divBcr += '<div class="row mx-div-desc">' +
+                '<div id="mxs_div_item_code" style="display:none">' + d.itemCode + '</div>' +
+                '<div id="mxs_div_item_lot" style="display:none">' + d.lot + '</div>' +
+                '<div style="display:none" id="mxs_div_job_sysid" class="mxs-div-job-sys-id">' + d.jobSysId + '</div>' +
+                (bcrRunNo[i] > 0 ? '<div style="width:4%"></div><div style="display:none" id="mxs_div_step" class="mxs-div-step">' + bcrStep[i] + '</div>' : '<div style="width:4%" id="mxs_div_step" class="mxs-div-step">' + bcrStep[i] + '</div>') +
+                '<div style="display:none" class="mx-div-operate-group-id">' + bcrGroupOperateId[i] + '</div>' +
+                '<div style="display:none" class="mx-div-check-group-id">' + bcrGroupCheckId[i] + '</div>' +
+                (bcrRunNo[i] > 0 ? '<div style="display:none" id="mxs_div_no" class="mxs-div-no">' + bcrRunNo[i] + '</div><div style="width:4%" >' + bcrStep[i] + '.' + bcrRunNo[i] + '</div>': '<div style="display:none" id="mxs_div_no" class="mxs-div-no">' + bcrRunNo[i] + '</div>') +
+                (bcrRunNo[i] == 0 ? '<div class="col-10"><b><u>' + bcrStepDesc[i] + '</u></b></div>' : '<div class="col-4">' + bcrStepDesc[i] + '</div>') +
+                '<div class="col-1">' +
+                '<div class="dropdown">' +
+                '<button ' + (((tempYn[i] == 'Y' ? 1 : 0) + (pressYn[i] == 'Y' ? 1 : 0) + (humidityYn[i] == 'Y' ? 1 : 0) + (startStopYn[i] == 'Y' ? 1 : 0) + (weightYn[i] == 'Y' ? 1 : 0) + (weightSampleYn[i] == 'Y' ? 1 : 0) + (vaccYn[i] == 'Y' ? 1 : 0)) == 0 ? 'style="display:none"' : '') + ' type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">Click</button>' +
+                '<div class="dropdown-menu">' +
+                (tempYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_temp">อุณหภูมิ</a>' : '') +
+                (pressYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_pressure">ความดันอากาศ</a>' : '') +
+                (humidityYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_humidity">ความชื้น</a>' : '') +
+                (startStopYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_time">เวลา</a>' : '') +
+                (weightYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_weight">ปริมาณบรรจุ</a>' : '') +
+                (weightSampleYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_weight_sample">Weight of sample</a>' : '') +
+                (vaccYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_vacuum">Vacuum</a>' : '') +
+                (imageYn[i] == 'Y' ? '<a class="dropdown-item" href="#" style="font-size:13px" id="l_adt_image">รูปภาพ</a>' : '') +
+                //'<a class="dropdown-item" href="#" style="font-size:13px">Check list</a>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div style="margin-left:3%;width:10%;white-space: nowrap">' + bcrOperateChk + '</div>' +
+                '<div style="width:12%">' + bcrOperateChkDt + '</div>' +
+                '<div style="width:10%;white-space: nowrap">' + bcrChkChk + '</div>' +
+                '<div style="width:15%">' + bcrChkDt + '</div>' +
+                '</div>' +
+                '<div class="hr-line-dashed"></div>';
+        }
+
+        return '<table cellpadding="7" class="mx-sub-datable" cellspacing="0" border="0" style="padding-left:50px;width:100%">' +
+            '<tr><td><b>Clean Control</b></td></tr>'+
+            '<tr>' +
+            //'<td style="width:10%;vertical-align:top"><b>Clean Control</b></td>' +
+            '<td>' +
+            '<div class="row">' +
+            '<div style="width:4%;white-space: nowrap"><b>No.</b></div>' +
+            '<div class="col-1 padding-0" style="white-space: nowrap"><b>Equipment No</b></div>' +
+            '<div class="col-3 padding-0" style="margin-left:2%;white-space: nowrap"><b>Equipment Name</b></div>' +
+            '<div class="col-1" style="white-space: nowrap"><b>Addition</b></div>' +
+            '<div class="col-1 padding-0" style="white-space: nowrap"><b>Clean By</b></div>' +
+            '<div class="col-2 padding-0" style="white-space: nowrap"><b>Date</b></div>' +
+            '<div class="col-1 padding-0" style="white-space: nowrap"><b>Check By</b></div>' +
+            '<div class="col-2 padding-0" style="white-space: nowrap"><b>Date</b></div>' +
+            '</div>' +
+            divCleanControl +
+            '</td>' +
+            '</tr>' +
+            '<tr><td><b>Cored Procedure</b></td></tr>'+
+            '<tr>' +
+            //'<td style="vertical-align:top;"><b>Cored Procedure</b></td>' +
+            '<td>' +
+            '<div class="row">' +
+            '<div style="white-space: nowrap;width:4%"><b>Step</b></div>' +
+            '<div class="col-4" style="white-space: nowrap"><b>Manufacturing Procedure</b></div>' +
+            '<div style="white-space: nowrap;width:4%"></div>' +
+            '<div class="col-1" style="white-space: nowrap"><b>Addition</b></div>' +
+            '<div style="margin-left:3%;width:10%;white-space: nowrap"><b>Operat By</b></div>' +
+            '<div style="width:12%"><b>Date</b></div>' +
+            '<div style="width:10%;white-space: nowrap"><b>Check By</b></div>' +
+            '<div style="width:15%"><b>Date</b></div>' +
+            '</div>' +
+            divBcr +
+            '</td>' +
+            '</tr>' +
+            '<tr>' +
+            '<td style="vertical-align:top;"><div class="row"><div><b>Remark : </b></div><div>' + d.remark + '</div></div></td>' +
+            //'<td><div class="row">' + d.remark + '</div><td>' +
+            '</tr>' +
+            '</table>';
+    }
+
+    $(document).ready(function () {
+        var table = $('#example').DataTable({
+            dom: '<"d-flex"<"p-2"l><"ml-auto p-2"f><"p-2"B>>rt<"d-flex"<"p-2"i><"ml-auto p-2"p>>',
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                        buttons: [
+                {
+                    className: 'btn btn-primary btn-sm',
+                    text: 'Create',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "ImportExcel"))';
+                    }
+                }, {
+                    className: 'btn btn-success btn-sm',
+                    text: 'Run Job',
+                                action: function (e, dt, node, config) {
+                                    window.location.href = '@Html.Raw(Url.Action("Index", "RunJob"))';
+                                }
+                            }
+                     ],
+                     "ajax": {
+                "url": '@Url.Action("GetJob", "Cored")',
+                "type": "POST"
+                     },
+                     "fnDrawCallback": function (oSettings) {
+                         $('[data-toggle="popover"]').popover({ trigger: 'hover', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+                     },
+            "columns": [
+                {
+                    "className": 'details-control',
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": ''
+                },
+                //{ "data": "itemCode" },
+                { "data": "jobSysId", className: 'sysid' },
+                {
+                    "data": "itemName",
+                    "render": function (data, type, row, meta) {
+                        var temp = data.split('|');
+                        return '<a href="#" id="l_appr_job_mx" data-html="true" style="color:black" data-toggle="popover" data-content="' +
+                            '<B><U>Item Code</U> : </B>' + temp[0] + '<br/>' +
+                            '<B><U>Version</U> : </B>' + temp[2] + '<br/>' +
+                            '<B><U>Start Dt</U> : </B>' + temp[3] + '<br/>' +
+                            '<B><U>End Dt</U> : </B>' + temp[4] + '<br/>' +
+                            '">' + temp[1] + '</a>';
+                    }
+                },
+                { "data": "lot" },
+                { "data": "batchSize", className: 'dt-body-right' },
+                { "data": "startDt", className: 'displyhide' },
+                { "data": "endDt", className: 'displyhide' },
+                {
+                    "data": "userProgress",
+                    "render": function (data, type, row, meta) {
+                        var check = '';
+                        if (data == 100) {
+                            check = '<div class="progress"><div class="progress-bar bg-success" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%;"></div><div class="progress-bar-title">' + data + '%</div></div>';
+                        }
+                        else {
+                            check = '<div class="progress"><div class="progress-bar bg-warning" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%;"></div><div class="progress-bar-title">' + data + '%</div></div>';
+                        }
+                        return check;
+                    }
+                },
+                {
+                    "data": "qaProgress",
+                    "render": function (data, type, row, meta) {
+                        var check = '';
+                        if (data == 100) {
+                            check = '<div class="progress"><div class="progress-bar bg-success" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%;"></div><div class="progress-bar-title">' + data + '%</div></div>';
+                        }
+                        else {
+                            check = '<div class="progress"><div class="progress-bar bg-info" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%;"></div><div class="progress-bar-title">' + data + '%</div></div>';
+                        }
+                        return check;
+                    }
+                },
+                {
+                    "data": "jobApprPd",
+                    "render": function (data, type, row, meta) {
+                        var check = '';
+                        var data2 = data.split('|');
+                        if (data2[0] == 200) {
+                            if (data2[1] == 1) {
+                                check = '<a href="#" data-toggle="popover" data-content="' + data2[2] + ' ' + data2[3] + '"><i style="color:#00FF00" class="fa fa-check" aria-hidden="true"></i></a>';
+                            }
+                            else {
+                                if (JSON.parse(authApprJob.toLowerCase()) == true) {
+                                    check = '<a href="#"  class="l-apprpd-job-mx"><i style="color:black" class="fa fa-check" aria-hidden="true"></i></a>';
+                                }
+                            }
+                        }
+                        return check;
+                    }
+                },
+                {
+                    "data": "jobApprQa",
+                    "render": function (data, type, row, meta) {
+                        var check = '';
+                        var data2 = data.split('|');
+                        if (data2[0] == 200) {
+                            if (data2[1] == 1) {
+                                check = '<a href="#" data-toggle="popover" data-content="' + data2[2] + ' ' + data2[3] + '"><i style="color:#00FF00" class="fa fa-check" aria-hidden="true"></i></a>';
+                            }
+                            else {
+                                if (JSON.parse(authApprJob.toLowerCase()) == true) {
+                                    check = '<a href="#"  class="l-apprqa-job-mx"><i style="color:black" class="fa fa-check" aria-hidden="true"></i></a>';
+                                }
+                            }
+                        }
+                        return check;
+                    }
+                },
+                {
+                    "visible": (JSON.parse(authEditJob.toLowerCase()) == true ? true : false),
+                    "render": function (data, type, row, meta) {
+                        var edit = '';
+                        if (JSON.parse(authEditJob.toLowerCase()) == true) {
+                            edit = '<a href="#" class="edit-tmain">Edit</a>&nbsp;&nbsp;<a href="#" class="delete-tmain" style="color:red">Delete</a>';
+                        }
+                        return edit;
+                    }
+                }
+            ],
+            //"order": [[1, 'asc']]
+        });
+
+        table.button(0).enable(JSON.parse(authCreate.toLowerCase()));
+        table.button(1).enable(JSON.parse(authRunJob.toLowerCase()));
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Add Clean
+        $("body").on("click", ".bt-add-clean", function (e) {
+            var row = $(this).closest('td');
+            $('<div class="row clean-control clean-control-add">' +
+                '<div style="display:none"  id="mxs_div_cc_job_sysid" class="mxs-add-div-cc-job-sysid">' + row.find('.mxs-div-cc-job-sysid').eq(row.find('.mxs-div-cc-job-sysid').length - 1).text() + '</div>' +
+                '<div id="mxs_div_cc_item_code" class="mxs-add-div-cc-item-code" style="display:none">' + row.find('.mxs-div-cc-item-code').eq(row.find('.mxs-div-cc-item-code').length - 1).text() + '</div>' +
+                '<div id="mxs_div_cc_item_lot" class="mxs-add-div-cc-item-lot" style="display:none">' + row.find('.mxs-div-cc-item-lot').eq(row.find('.mxs-div-cc-item-lot').length-1).text() + '</div>' +
+                '<div style="width:4%" class="mxs-div-cc-no mxs-add-div-cc-no" id="mxs_div_cc_no">' + (row.find('.clean-control').length + 1) + '</div>' +
+                '<div class="col-1 padding-0 div-equipment-no"><span class="sp-equipment-no"></span><input type="text" class="i-equipment-no form-control form-control-sm" /></div>' +
+                '<div class="col-3 padding-0 div-equipment-name" style="margin-left:2%"><span class="sp-equipment-name"></span><input type="text" class="i-equipment-name form-control form-control-sm" /></div>' +
+                '<div class="col-1"><div class="dropdown-add-clean dropdown"><input class="i-chk-clean-image" type="checkbox" /><label>Image</label></div></div>' +
+                '<div style="display:none" class="div-cc-clean-group-id div-add-clean-cc-group"></div>' +
+                '<div style="display:none" class="div-cc-check-group-id div-add-check-cc-group"></div>'+
+                '<div class="col-3 cc-group-clean">' +
+                '<select class="sl-cc-group-clean sl-group form-control form-control-sm">' +
+                '<option disabled selected value>Group Clean</option>' +
+                '</select>'+
+                '</div>' +
+                '<div class="col-3 cc-group-check">' +
+                '<select class="sl-cc-group-check sl-group form-control form-control-sm">' +
+                '<option disabled selected value>Group Check</option>' +
+                '</select>' +
+                '</div>' +
+                '</div><div class="hr-line-dashed clean-control-line clean-control-add-line"></div>').insertAfter(row.find('.clean-control-line').eq(row.find('.clean-control-line').length - 1));
+
+            //$('.sl-group option').remove();
+         
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetGroupDetail", "ImportExcel")',
+                data: '{}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    for (var i = 0; i < data.Group.length; i++) {
+                        row.find('.sl-cc-group-clean').eq(row.find('.sl-cc-group-clean').length - 1).append('<option value="' + data.Group[i].gdi_group_id + '">' + data.Group[i].gdi_group_name + data.Group[i].gdi_group_desc + '</option>');
+                        row.find('.sl-cc-group-check').eq(row.find('.sl-cc-group-check').length - 1).append('<option value="' + data.Group[i].gdi_group_id + '">' + data.Group[i].gdi_group_name + data.Group[i].gdi_group_desc + '</option>');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+
+            if (row.find('.clean-control-add').length > 0) {
+                row.find('.bt-save-clean').show();
+                row.find('.bt-remove-clean').show();
+            }
+        });
+        //Remove clean
+        $("body").on("click", ".bt-remove-clean", function (e) {
+            var row = $(this).closest('td');
+            var r = confirm("ต้องการลบหรือไม่");
+            if (r == true) {
+                row.find('.clean-control-add').eq(row.find('.clean-control-add').length - 1).remove()
+                row.find('.clean-control-add-line').eq(row.find('.clean-control-add-line').length - 1).remove();
+                if (row.find('.clean-control-add').length == 0) {
+                    row.find('.bt-save-clean').hide();
+                    row.find('.bt-remove-clean').hide();
+                }
+            }
+        });
+        //Save clean
+        $("body").on("click", '.bt-save-clean', function (e) {
+            var row = $(this).closest('td');
+
+            jDataEquipmentNoCCObj = [];
+            console.log(row.find('.clean-control-add').length);
+            for (var i = 0; i < row.find('.clean-control-add').length; i++) {
+                
+                jDataEquipmentNoCC = {};
+                jDataEquipmentNoCC["jobSysId"] = row.find('.mxs-add-div-cc-job-sysid').eq(0).text();
+                jDataEquipmentNoCC["runNo"] = row.find('.mxs-add-div-cc-no').eq(0).text();
+                jDataEquipmentNoCC["equipmentNo"] = row.find('.i-equipment-no').eq(0).val();
+                jDataEquipmentNoCC["equipmentName"] = row.find('.i-equipment-name').eq(0).val();
+                jDataEquipmentNoCC["groupClean"] = row.find('.sl-cc-group-clean option:selected').eq(0).val();
+                jDataEquipmentNoCC["groupCheck"] = row.find('.sl-cc-group-check option:selected').eq(0).val();
+              
+                var mdAdtPic = '';
+                var cleanChk = '';
+                var beforeChk = row.find('.l-cc-chk').eq(row.find('.l-cc-chk').length - 1).text();
+                var groupCleanId = row.find('.sl-cc-group-clean option:selected').eq(0).val();
+                var CCCleanGroup = jQuery.grep(groupIdAll, function (a) { return a == row.find('.sl-cc-group-clean option:selected').eq(0).val(); }).length;
+
+                if (row.find('.i-chk-clean-image').eq(0).is(":checked")) {
+                    jDataEquipmentNoCC["reqImageYn"] = 'Y';
+                    mdAdtPic = '<button type="button" class="btn btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown">Click</button><div class="dropdown-menu"><a class="dropdown-item" href="#" style="font-size:13px" id="l_cc_adt_image">รูปภาพ</a></div>';
+                }
+                else {
+                    jDataEquipmentNoCC["reqImageYn"] = 'N';
+                    mdAdtPic = '';
+                }
+                jDataEquipmentNoCCObj.push(jDataEquipmentNoCC);
+
+                //chk
+                if (beforeChk.length > 0 && beforeChk != 'click' && (CCCleanGroup > 0 || groupCleanId.length == 0 || groupCleanId == 0)) {
+                    cleanChk = '<a href="#" id="l_cc_clean" class="l-cc-clean">click</a>';
+                }
+                else {
+                    cleanChk = '<span class="l-cc-clean"></span>';
+                }
+
+                row.find('.clean-control-add').eq(i).html('<div style="display:none" id="mxs_div_cc_job_sysid" class="mxs-div-cc-job-sysid">' + row.find('.mxs-add-div-cc-job-sysid').eq(0).text() + '</div>' +
+                    '<div id="mxs_div_cc_item_code" class="mxs-div-cc-item-code" style="display:none">' + row.find('.mxs-add-div-cc-item-code').eq(0).text() + '</div>' +
+                    '<div id="mxs_div_cc_item_lot" class="mxs-div-cc-item-lot" style="display:none">' + row.find('.mxs-add-div-cc-item-lot').eq(0).text() + '</div>' +
+                    '<div style="width:4%" class="mxs-div-cc-no" id="mxs_div_cc_no">' + row.find('.mxs-add-div-cc-no').eq(0).text() + '</div>' +
+                    '<div class="col-1 padding-0" style="white-space:nowrap">' + row.find('.i-equipment-no').eq(0).val() + '</div>' +
+                    '<div class="col-3 padding-0" style="margin-left:2%">' + row.find('.i-equipment-name').eq(0).val() + '</div>' +
+                    '<div class="col-1">' + mdAdtPic + '</div>' +
+                    '<div style="display:none" class="div-cc-clean-group-id">'+row.find('.sl-cc-group-clean option:selected').eq(0).val()+'</div>' +
+                    '<div style="display:none" class="div-cc-check-group-id">' + row.find('.sl-cc-group-check option:selected').eq(0).val() + '</div>' +
+                    '<div class="col-1 padding-0">' + cleanChk+'</div>' +
+                    '<div class="col-2 padding-0 mxs-div-cc-clean-dt"></div>' +
+                    '<div class="col-1 padding-0"><span class="l-cc-chk"></span></div>' +
+                    '<div class="col-2 padding-0 mxs-div-cc-dt"></div>'+
+                    '<div class="hr-line-dashed clean-control-line"></div>');
+            }
+            row.find('.clean-control').removeClass('clean-control-add');
+
+            row.find('.bt-save-clean').hide();
+            row.find('.bt-remove-clean').hide();
+
+             $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("InsertRunJobCC", "Cored")',
+                 data: '{"listAddCleanControlInfo":' + JSON.stringify(jDataEquipmentNoCCObj) + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        $("body").on("click", ".l-apprpd-job-mx", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('tr');
+            $('#modalTMainApprJobPd').modal('show', { jobSysId: row.find('.sysid').text() });
+        });
+        $("body").on("click", ".l-apprqa-job-mx", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('tr');
+            $('#modalTMainApprJobQa').modal('show', { jobSysId: row.find('.sysid').text() });
+        });
+
+        
+        $("body").on("click", ".edit-tmain", function (e) {
+            var row = $(this).closest('tr');
+            $('#modalTMainEdit').modal('show', { jobSysId: row.find('.sysid').text() });
+        });
+
+         $("body").on("click", ".delete-tmain", function (e) {
+            var r = confirm("ต้องการลบหรือไม่");
+            var row = $(this).closest('tr');
+            if (r == true) {
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '@Url.Action("DeleteJob", "Default")',
+                    data: '{"jobSysId":' + row.find('.sysid').text() + '}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        table.ajax.reload(null, false);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError);
+                    }
+                });
+            }
+            else {
+            }
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //SignalR
+        chatBcr.client.broadcastMessage = function (type, type2, jobSysId, step, runNo, userName, date, index) {
+            if ($('.shown').length) {
+                if (type == 'BCR_CC') {
+                    for (var i = 0; i < $('.mxs-div-cc-job-sysid').length; i++) {
+                        if (type2 == 'CLEAN') {
+                            if (($('.mxs-div-cc-job-sysid').eq(i).text() == jobSysId) && ($('.mxs-div-cc-no').eq(i).text() == runNo)) {
+                                $('.l-cc-clean').eq(index).parent().html('<span class="l-cc-clean">' + userName + '</span>')
+                                $('.mxs-div-cc-clean-dt').eq(index).text(date);
+
+                                //var ccCleanGroupGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.div-cc-clean-group-id').eq(i + 1).text(); }).length;
+                                var ccCheckGroupGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.div-cc-check-group-id').eq(index).text(); }).length;
+
+                                //if (JSON.parse(authMXCCClean.toLowerCase()) == true && (ccCleanGroupGroup > 0 || $('.div-cc-clean-group-id').eq(i + 1).text().length == 0)) {
+                                //    $('.l-cc-clean').eq(i + 1).parent().html('<a href="#" class="l-cc-clean">click</a>')
+                                //}
+                                if (JSON.parse(authMXCCCheck.toLowerCase()) == true &&
+                                    (ccCheckGroupGroup > 0 || $('.div-cc-check-group-id').eq(index).text().length == 0 || $('.div-cc-check-group-id').eq(index).text()==0) &&
+                                    (i == 0 || (($('.l-cc-clean').eq(index).text() != 'click' && $('.l-cc-clean').eq(index).text().length > 0)))) {
+                                    $('.l-cc-chk').eq(index).parent().html('<a href="#" class="l-cc-chk">click</a>');
+                                }
+                            }
+                        }
+                        if (type2 == 'CHECK') {
+                            if (($('.mxs-div-cc-job-sysid').eq(i).text() == jobSysId) && ($('.mxs-div-cc-no').eq(i).text() == runNo)) {
+                                $('.l-cc-chk').eq(i).parent().html('<span class="l-cc-chk">' + userName + '</span>');
+                                $('.mxs-div-cc-dt').eq(i).text(date);
+
+                                var ccCleanGroupGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.div-cc-clean-group-id').eq(index+1).text(); }).length;
+                                //var ccCheckGroupGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.div-cc-check-group-id').eq(i + 1).text(); }).length;
+
+                                if (JSON.parse(authMXCCClean.toLowerCase()) == true &&
+                                    (ccCleanGroupGroup > 0 || $('.div-cc-clean-group-id').eq(index + 1).text().length == 0 || $('.div-cc-clean-group-id').eq(index + 1).text()==0) &&
+                                    ($('.l-cc-chk').eq(index).text() != 'click' && $('.l-cc-chk').eq(index).text().length > 0)) {
+                                    $('.l-cc-clean').eq(index + 1).parent().html('<a href="#" class="l-cc-clean">click</a>')
+
+
+                                    var MxOperateGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.mx-div-operate-group-id').eq(0).text(); }).length;
+
+                                    if ($('.l-cc-clean').eq(index + 1).parent().html() == null &&
+                                        $('.l-bcr-operate').eq(0).text().length == 0 &&
+                                        (MxOperateGroup > 0 || $('.mx-div-operate-group-id').eq(0).text().length == 0 || $('.mx-div-operate-group-id').eq(0).text() == 0)) {
+                                        $('.l-bcr-operate').eq(0).parent().html('<a href="#" class="l-bcr-operate">click</a>');
+                                    }
+                                }
+                                //if (JSON.parse(authMXCCCheck.toLowerCase()) == true && (ccCheckGroupGroup > 0 || $('.div-cc-check-group-id').eq(i + 1).text().length == 0) && $('.l-cc-clean').eq(i + 1).text() != 'click' && $('.l-cc-clean').eq(i + 1).text().length > 0) {
+                                //    $('.l-cc-chk').eq(i + 1).parent().html('<a href="#" class="l-cc-chk">click</a>');
+                                //}
+                            }
+                        }
+                    }
+                }
+                if (type == 'BCR') {
+                    for (var i = 0; i < $('.mxs-div-job-sys-id').length; i++) {
+                        if (type2 == "OPERATE") {
+
+                            if (($('.mxs-div-job-sys-id').eq(i).text() == jobSysId) &&
+                                ($('.mxs-div-step').eq(i).text() == step) &&
+                                ($('.mxs-div-no').eq(i).text() == runNo)) {
+                                $('.l-bcr-operate').eq(index).parent().html('<span class="l-bcr-operate">' + userName + '</span>');
+                                $('.mxs-div-operate-dt').eq(index).parent().html('<span class="mxs-div-operate-dt">' + date + '</span>');
+
+                                //var MxOperateGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.mx-div-operate-group-id').eq(i + 1).text(); }).length;
+                                var MxCheckGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.mx-div-check-group-id').eq(index).text(); }).length;
+
+                                //if (JSON.parse(authMXOperate.toLowerCase()) == true && (MxOperateGroup > 0 || $('.mx-div-operate-group-id').eq(i + 1).text().length == 0)) {
+                                //    $('.l-bcr-operate').eq(i + 1).parent().html('<a href="#" class="l-bcr-operate">click</a>');
+                                //}
+                                if (JSON.parse(authMXCheck.toLowerCase()) == true &&
+                                    (MxCheckGroup > 0 || $('.mx-div-check-group-id').eq(index).text().length == 0 || $('.mx-div-check-group-id').eq(index).text()==0) &&
+                                    ($('.l-bcr-operate').eq(index).text() != 'click' && $('.l-bcr-operate').eq(index).text().length > 0)) {
+                                    $('.l-bcr-chk').eq(index).parent().html('<a href="#" class="l-bcr-chk">click</a>');
+                                }
+                            }
+                        }
+                        if (type2 == 'CHECK') {
+                            if (($('.mxs-div-job-sys-id').eq(i).text() == jobSysId) && ($('.mxs-div-step').eq(i).text() == step) && ($('.mxs-div-no').eq(i).text() == runNo)) {
+                                $('.l-bcr-chk').eq(index).parent().html('<span class="l-bcr-chk">' + userName + '</span>');
+                                $('.mxs-div-dt').eq(index).parent().html('<span class="mxs-div-dt">' + date + '</span>');
+
+                                var MxOperateGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.mx-div-operate-group-id').eq(index + 1).text(); }).length;
+                                //var MxCheckGroup = jQuery.grep(groupIdAll, function (a) { return a == $('.mx-div-check-group-id').eq(i + 1).text(); }).length;
+                                if (JSON.parse(authMXOperate.toLowerCase()) == true &&
+                                    (MxOperateGroup > 0 || $('.mx-div-operate-group-id').eq(index + 1).text().length == 0 || $('.mx-div-operate-group-id').eq(index + 1).text()==0) &&
+                                    ($('.l-bcr-chk').eq(index).text() != 'click' && $('.l-bcr-chk').eq(index).text().length > 0)) {
+                                    $('.l-bcr-operate').eq(index + 1).parent().html('<a href="#" class="l-bcr-operate">click</a>');
+                                }
+                                //if (JSON.parse(authMXCheck.toLowerCase()) == true && (MxCheckGroup > 0 || $('.mx-div-check-group-id').eq(i + 1).text().length == 0) && $('.l-bcr-operate').eq(i + 1).text() != 'click' && $('.l-bcr-operate').eq(i + 1).text().length > 0) {
+                                 
+                                //    $('.l-bcr-chk').eq(i + 1).parent().html('<a href="#" class="l-bcr-chk">click</a>');
+                                //}
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                table.ajax.reload(null, false);
+            }
+        };
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Temp
+        $("body").on("click", "#l_adt_temp", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            $('#mdadt_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdadt_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdadt_div_no').text(row.find('#mxs_div_no').text());
+
+            //Check disable input if check already
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-bcr-chk').text().length > 0 && row.find('.l-bcr-chk').text() != 'click' ? $('.mdadt-i-temp').attr('disabled', 'disabled') : $(".mdadt-i-temp").removeAttr('disabled');
+            }
+            $('#modalTMainTemp').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Pressure
+        $("body").on("click", "#l_adt_pressure", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            $('#mdadp_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdadp_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdadp_div_no').text(row.find('#mxs_div_no').text());
+
+            //Check disable input if check already
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-bcr-chk').text().length > 0 && row.find('.l-bcr-chk').text() != 'click' ? $('.mdadp-i-pressure').attr('disabled', 'disabled') : $(".mdadp-i-pressure").removeAttr('disabled');
+            }
+
+            $('#modalTMainPressure').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Humidity
+        $("body").on("click", "#l_adt_humidity", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            $('#mdadh_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdadh_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdadh_div_no').text(row.find('#mxs_div_no').text());
+
+            //Check disable input if check already
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-bcr-chk').text().length > 0 && row.find('.l-bcr-chk').text() != 'click' ? $('.mdadh-i-humdity').attr('disabled', 'disabled') : $(".mdadh-i-humdity").removeAttr('disabled');
+            }
+
+            $('#modalTMainHumidity').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Time
+        $("body").on("click", "#l_adt_time", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            $('#mdaddt_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdaddt_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdaddt_div_no').text(row.find('#mxs_div_no').text());
+
+            $('#modalTMainTime').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Image
+        $("body").on("click", "#l_cc_adt_image", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+            //Parameter
+
+
+            $('#mdadt_div_job_sysid').text(row.find('#mxs_div_cc_job_sysid').text());
+            $('#mdadt_div_no').text(row.find('#mxs_div_cc_no').text());
+            $('#mdadt_div_item_code').text(row.find('#mxs_div_cc_item_code').text());
+            $('#mdadt_div_lot').text(row.find('#mxs_div_cc_item_lot').text());
+
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-cc-chk').text().length > 0 && row.find('.l-cc-chk').text() != 'click' ? $('#mdccimg_bt_save').attr('disabled', 'disabled') : $("#mdccimg_bt_save").removeAttr('disabled');
+            }
+
+            $('#modalCCTMainUploadImage').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Weight
+        $("body").on("click", "#l_adt_weight", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            //$('#mdadw_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            //$('#mdadw_div_step').text(row.find('#mxs_div_step').text());
+            //$('#mdadw_div_no').text(row.find('#mxs_div_no').text());
+            $('#modalTMainWeight').modal('show', { jobSysId: row.find('#mxs_div_job_sysid').text(), stepNo: row.find('#mxs_div_step').text(), runNo: row.find('#mxs_div_no').text()});
+        });
+        $("body").on("click", "#l_adt_image", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+            //Parameter
+            $('#mdadt_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdadt_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdadt_div_no').text(row.find('#mxs_div_no').text());
+            $('#mdadt_div_item_code').text(row.find('#mxs_div_item_code').text());
+            $('#mdadt_div_lot').text(row.find('#mxs_div_item_lot').text());
+
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-bcr-chk').text().length > 0 && row.find('.l-bcr-chk').text() != 'click' ? $('.mdadt-i-image').attr('disabled', 'disabled') : $(".mdadt-i-image").removeAttr('disabled');
+            }
+            $('#modalTMainUploadImage').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Weight Sample
+        $("body").on("click", "#l_adt_weight_sample", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+
+            //Parameter
+            $('#mdadws_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdadws_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdadws_div_no').text(row.find('#mxs_div_no').text());
+
+            //Check disable input if check already
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                row.find('.l-bcr-chk').text().length > 0 && row.find('.l-bcr-chk').text() != 'click' ? $('.mdadws-i-ws').attr('disabled', 'disabled') : $(".mdadws-i-ws").removeAttr('disabled');
+            }
+            $('#modalTMainWeightSample').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Cleancontrol
+        //Clean
+        $("body").on("click", ".l-cc-clean", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+            $('#mdchk_index_div_from').text($('.l-cc-clean').index(this));
+            $('#mdchk_div_job_sysid').text(row.find('#mxs_div_cc_job_sysid').text());
+            $('#mdchk_div_no').text(row.find('#mxs_div_cc_no').text());
+
+            $('#modalTMainClCleanChk').modal('show');
+        });
+        //Check
+        $("body").on("click", ".l-cc-chk", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+            $('#md_mxcl_chk_chk').text($('.l-cc-chk').index(this));
+            $('#md_mxcl_chk_div_job_sysid').text(row.find('#mxs_div_cc_job_sysid').text());
+            $('#md_mxcl_chk_div_no').text(row.find('#mxs_div_cc_no').text());
+            $('#modalTMainClChkChk').modal('show');
+
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        //Bcr
+        //Operate
+        $("body").on("click", ".l-bcr-operate", function (e) {
+            e.preventDefault();
+            var row = $(this).closest('.row');
+            $('#mdchk_mx_div_from_index').text($('.l-bcr-operate').index(this));
+            $('#mdchk_mx_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#mdchk_mx_div_step').text(row.find('#mxs_div_step').text());
+            $('#mdchk_mx_div_no').text(row.find('#mxs_div_no').text());
+            //$('#mx_operate_group_id').text(row.find('.mx-div-operate-group-id').text());
+
+            $('#modalTMainBcrOperateChk').modal('show');
+        });
+        //Check
+        $("body").on("click", ".l-bcr-chk", function (e) {
+            e.preventDefault();
+
+            var row = $(this).closest('.row');
+            $('#md_mxchk_div_from_index').text($('.l-bcr-chk').index(this));
+            $('#md_mxchk_div_job_sysid').text(row.find('#mxs_div_job_sysid').text());
+            $('#md_mxchk_div_step').text(row.find('#mxs_div_step').text());
+            $('#md_mxchk_div_no').text(row.find('#mxs_div_no').text());
+            $('#modalTMainBcrChkChk').modal('show');
+        });
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Add event listener for opening and closing details
+        $('#example tbody').on('click', 'td.details-control', function (e) {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+                table.ajax.reload(null, false);
+            }
+            else {
+                // Open this row
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+                //$('[data-toggle="popover"]').popover({ trigger: 'focus', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+            }
+        });
+        $("body").on("click", "#bt_collapse", function (e) {
+            table.ajax.reload(null, false);
+        });
+    });
+</script>
+<br />
+<div class="card">
+    <div class="card-header">Job in Process Compressing</div>
+
+    <div class="card-body">
+        @{Html.RenderPartial("TMain");}
+    </div>
+
+    <!--Modal-->
+    <div id="mdad_temp">@Html.Partial("ModalTMainTemp")</div>
+    <div id="mdad_pressure">@Html.Partial("ModalTMainPressure")</div>
+    <div id="mdad_humidity">@Html.Partial("ModalTMainHumidity")</div>
+    <div id="mdad_time">@Html.Partial("ModalTMainTime")</div>
+    <div id="mdad_image">@Html.Partial("ModalTMainUploadImage")</div>
+    <div id="mdedt_tmain">@Html.Partial("ModalEditTMain")</div>
+    <div id="mdad_weight">@Html.Partial("ModalTMainWeight")</div>
+    <div id="mdad_weight_sample">@Html.Partial("ModalTMainWeightOfSample")</div>
+    <div id="mdadcc_image">@Html.Partial("ModalCCTMainUploadImage")</div>
+    <!--Modal-->
+    <!--Check-->
+    <div id="mdmx_apprpd_job_mx">@Html.Partial("ModalTMainApprJobPd")</div>
+    <div id="mdmx_apprqa_job_mx">@Html.Partial("ModalTMainApprJobQa")</div>
+    <div id="mdcl_clean_chk">@Html.Partial("ModalTmainClCleanChk")</div>
+    <div id="mdcl_chk_chk">@Html.Partial("ModalTMainClChkChk")</div>
+    <div id="mdbcr_operate_chk">@Html.Partial("ModalTMainBcrOperateChk")</div>
+    <div id="mdbcr_chk_chk">@Html.Partial("ModalTMainBcrChkChk")</div>
+    <div id="mdad_time_operate_check">@Html.Partial("ModalTMainTimeOperate")</div>
+    <div id="mdad_time_check_check">@Html.Partial("ModalTMainTimeCheck")</div>
+
+    <!--Check-->
+</div>
+<div class="form-group" style="float:right; position: relative; ">
+    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+        <button type="submit" class="btn btn-secondary btn-md btn-circle" id="bt_collapse">
+            <i class="fa fa-2x fa-compress" aria-hidden="true"></i>
+        </button>
+
+    </div>
+</div>

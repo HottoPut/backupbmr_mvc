@@ -1,0 +1,341 @@
+﻿<style>
+    .padding-5 {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+    .padding-0 {
+        padding-right: 3px;
+        padding-left: 3px;
+    }
+    button {
+        background-color: Transparent;
+        background-repeat: no-repeat;
+        border: none;
+        cursor: pointer;
+        overflow: hidden;
+        outline: none;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        var authMXCheck = '@HttpContext.Current.Session["AUTH_MIXING_CHECK"].ToString()';
+
+        checkAuthOperate();
+
+        $('#modalTMainWeight').on('shown.bs.modal', function (e) {
+              $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("GetWeight", "Default")',
+                 data: '{"jobSysid":' + $('#mdadw_div_job_sysid').text() + ',"step":' + $('#mdadw_div_step').text() + ',"runNo":' + $('#mdadw_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+
+                      var operateUsername = '';
+                      var checkUsername = '';
+                      var tempDisable = '';
+
+                      //First index
+                      $('.mdadw-i-containner').eq(0).val(data.GetWeight[0].containerNo);
+                      $('.mdadw-i-total').eq(0).val(data.GetWeight[0].totalWeight);
+                      $('.mdadw-i-tare').eq(0).val(data.GetWeight[0].tareWeight);
+                      $('.mdadw-i-net').eq(0).val(data.GetWeight[0].netWeight);
+
+                      $('.mdadw-i-s-total').eq(0).val(data.GetWeight[0].sToTal);
+                      $('.mdadw-i-theoretical').eq(0).val(data.GetWeight[0].sTheoretical);
+                      $('.mdadw-i-s-yield').eq(0).val(data.GetWeight[0].sYield);
+                      $('.md-mx-weight-check-dt').eq(0).text(data.GetWeight[0].dtCheck);
+
+                      if (data.GetWeight[0].userOperate.length > 0) {
+                          $('.mdadw-l-operate').eq(0).parent().html('<span class="mdadw-l-operate">' + data.GetWeight[0].userOperate + '</span>');
+                      }
+                      else {
+                          if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                              $('.mdadw-l-operate').eq(0).parent().html('<a href="#"  id="mdadw_l_operate" class="mdadw-l-operate">click</a>');
+                          }
+                          else {
+                              $('.mdadw-l-operate').eq(0).parent().html('<span class="mdadw-l-operate"></span>');
+                          }
+                      }
+
+                      if (data.GetWeight[0].userCheck.length > 0) {
+                          $('.mdadw-l-check').eq(0).parent().html('<span class="mdadw-l-check">' + data.GetWeight[0].userCheck + '</span>');
+                          $('.mdadw-i-containner').eq(0).attr('disabled', 'disabled');
+                          $('.mdadw-i-total').eq(0).attr('disabled', 'disabled');
+                          $('.mdadw-i-tare').eq(0).attr('disabled', 'disabled');
+                          $('.mdadw-i-net').eq(0).attr('disabled', 'disabled');
+                      }
+                      else {
+                          if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                              $('.mdadw-l-check').eq(0).parent().html('<a href="#"  id="mdadw_l_check" class="mdadw-l-check">click</a>');
+                          }
+                          else {
+                              $('.mdadw-l-check').eq(0).parent().html('<span class="mdadw-l-check"></span>');
+                          }
+                      }
+
+
+                     
+                      for (var i = 0; i < data.GetWeight.length - 1; i++) {
+
+                          tempDisable = ''; //Reset
+
+                          if (data.GetWeight[i + 1].userOperate.length > 0) {
+                              operateUsername = '<span class="mdadw-l-operate">' + data.GetWeight[i + 1].userOperate + '</span>'
+                          }
+                          else {
+                              if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                                  operateUsername = '<a href="#" id="mdadw_l_operate" class="mdadw-l-operate">click</a>';
+                              }
+                              else {
+                                  operateUsername = '<span class="mdadw-l-operate"><span>';
+                              }
+                          }
+                          if (data.GetWeight[i + 1].userCheck.length > 0) {
+                              checkUsername = '<span class="mdadw-l-check">' + data.GetWeight[i + 1].userCheck + '</span>'
+                              tempDisable = 'disabled="disabled"';
+                          }
+                          else {
+                              if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                                  checkUsername = '<a href="#" id="mdadw_l_check" class="mdadw-l-check">click</a>';
+                              }
+                              else {
+                                  checkUsername = '<span class="mdadw-l-check"></span>';
+                              }
+                          }
+                          $('<div class="container-fluid mdadw-div-container list-input" style="margin-top:10px">' +
+                              '<div class="row col-12">' +
+                              '<div class="col-2 padding-0"><input type="text" id="mdadw_i_containner" ' + tempDisable + ' value = "' + data.GetWeight[i + 1].containerNo + '" class="mdadw-i-containner i-operate form-control form-control-sm"/></div>' +
+                              '<div class="col-2 padding-0"><input type="text" id="mdadw_i_total" ' + tempDisable + ' value = "' + data.GetWeight[i + 1].totalWeight + '" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-total i-operate form-control form-control-sm"/></div>' +
+                              '<div class="col-2 padding-0"><input type="text" id="mdadw_i_tare" ' + tempDisable + ' value = "' + data.GetWeight[i + 1].tareWeight + '" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-tare i-operate input-md form-control form-control-sm"/></div>' +
+                              '<div class="col-2 padding-0"><input type="text" id="mdadw_i_net" ' + tempDisable + ' value = "' + data.GetWeight[i + 1].netWeight + '" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-net i-operate input-md form-control form-control-sm"/></div>' +
+                              '<div class="col-1 padding-0">' + operateUsername+'</div>' +
+                              '<div class="col-1 padding-0">' + checkUsername+'</div>' +
+                              '<div class="col-2 padding-0 md-mx-weight-check-dt">' + data.GetWeight[i + 1].dtCheck+'</div>' +
+                              '</div>' +
+                            '</div>').insertAfter($('.mdadw-div-container').eq(i));
+                      }
+
+                      //Check auth
+                      checkAuthOperate();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("body").on("click", "#mdadw_bt_add_container", function (e) {
+            var modalOperate = '';
+            var modalCheck = '';
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                modalOperate = '<a href="#" class="mdadw-l-operate">click</a>';
+            }
+            else {
+                modalOperate = '<span class="mdadw-l-operate"></span>';
+            }
+
+            if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                modalCheck = '<a href="#" class="mdadw-l-check">click</a>';
+            }
+            else {
+                modalCheck = '<span class="mdadw-l-check"></span>';
+            }
+            $('<div class="container-fluid mdadw-div-container list-input" style="margin-top:10px">' +
+                '<div class="row col-12">' +
+                '<div class="col-2 padding-0"><input type="text" id="mdadw_i_containner" class="mdadw-i-containner form-control form-control-sm"/></div>' +
+                '<div class="col-2 padding-0"><input type="text" id="mdadw_i_total" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-total i-operate form-control form-control-sm"/></div>' +
+                '<div class="col-2 padding-0"><input type="text" id="mdadw_i_tare" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-tare i-operate input-md form-control form-control-sm"/></div>' +
+                '<div class="col-2 padding-0"><input type="text" id="mdadw_i_net" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-net i-operate input-md form-control form-control-sm"/></div>' +
+                '<div class="col-1 padding-0">'+modalOperate+'</div>' +
+                '<div class="col-1 padding-0">'+modalCheck+'</div>' +
+                '<div class="col-2 padding-0 md-mx-weight-check-dt"></div>' +
+                '</div>' +
+                '</div>').insertAfter($('.mdadw-div-container').eq($('.mdadw-div-container').length - 1))
+        });
+        $("body").on("click", "#mdadw_bt_remove_container", function (e) {
+            if ($('.mdadw-div-container').length > 1) {
+                $('.mdadw-div-container').eq($('.mdadw-div-container').length - 1).remove();
+            }
+        });
+        $("#modalTMainWeight").on("hidden.bs.modal", function (e) {
+
+
+            var modalOperate = '';
+            var modalCheck = '';
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                modalOperate = '<a href="#" class="mdadw-l-operate">click</a>';
+            }
+            else {
+                modalOperate = '<span class="mdadw-l-operate"></span>';
+            }
+
+            if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                modalCheck = '<a href="#" class="mdadw-l-check">click</a>';
+            }
+            else {
+                modalCheck = '<span class="mdadw-l-check"></span>';
+            }
+
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                $(".i-operate").removeAttr('disabled');
+            }
+            $('.mdadw-l-operate').parent().html(modalOperate);
+            $('.mdadw-l-check').parent().html(modalCheck);
+
+
+            $('.input-md').val('');
+            $('.input-md').text('');
+            $('.list-input').remove();
+        });
+        $("body").on("click", "#mdadw_bt_save", function (e) {
+            jWeightObj = [];
+            for (var i = 0; i < $('.mdadw-div-container').length; i++) {
+                jWeight = {};
+                jWeight["listNo"] = (i + 1);
+                jWeight["containerNo"] = $('.mdadw-i-containner').eq(i).val();
+                jWeight["totalWeight"] = $('.mdadw-i-total').eq(i).val();
+                jWeight["tareWeight"] = $('.mdadw-i-tare').eq(i).val();
+                jWeight["netWeight"] = $('.mdadw-i-net').eq(i).val();
+                jWeight["statusOperate"] = $('.mdadw-l-operate').eq(i).text() == 'click' ? 0 : 1;
+                jWeightObj.push(jWeight);
+            }
+
+              $.ajax({
+                type: 'POST',
+                  dataType: 'html',
+                  url: '@Url.Action("SaveWeight", "Default")',
+                  data: '{"jobSysid":' + $('#mdadw_div_job_sysid').text() + ',"step":' + $('#mdadw_div_step').text() + ',"runNo":' + $('#mdadw_div_no').text() + ',"sTotalWeight":' + $('#mdadw_i_s_total').val() + ',"sTheoretical":' + $('#mdadw_i_theoretical').val() + ',"sYield":' + $('#mdadw_i_s_yield').val() + ',"listModalWeightInfos":' + JSON.stringify(jWeightObj) + ',"lengthContainner" :' + $('.mdadw-div-container').length+'}',
+                  contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+                      $('#modalTMainWeight').modal('toggle');
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+            });
+        });
+        $("body").on("click", ".mdadw-l-operate", function (e) {
+            e.preventDefault();
+            $('#md_mxw_operate_div_job_sysid').text($('#mdadw_div_job_sysid').text());
+            $('#md_mxw_operate_div_step').text($('#mdadw_div_step').text());
+            $('#md_mxw_operate_div_no').text($('#mdadw_div_no').text());
+            $('#md_mxw_operate_list_chk').text($('.mdadw-l-operate').index(this) + 1);
+            $('#modalTMainWeightOperateChk').modal('show');
+        });
+        $("body").on("click", ".mdadw-l-check", function (e) {
+            e.preventDefault();
+            $('#md_mxw_check_div_job_sysid').text($('#mdadw_div_job_sysid').text());
+            $('#md_mxw_check_div_step').text($('#mdadw_div_step').text());
+            $('#md_mxw_check_div_no').text($('#mdadw_div_no').text());
+            $('#md_mxw_check_list_chk').text($('.mdadw-l-check').index(this) + 1);
+            $('#modalTMainWeighCheckCheck').modal('show');
+
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainWeight">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">น้ำหนัก</h4>
+                <button type="button" id="mdadw_bt_close" class="mdadh-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadw_div_job_sysid" style="display:none" class="mdadw-div-job-sysid input-md"></div>
+                <div id="mdadw_div_step" style="display:none" class="mdadw-div-step input-md"></div>
+                <div id="mdadw_div_no" style="display:none" class="mdadw-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row col-12">
+                        <div class="col-2 padding-0" >Container NO</div>
+                        <div class="col-2 padding-0" >น้ำหนักรวม/Total Weight</div>
+                        <div class="col-2 padding-0" >น้ำหนักถัง/Tare Weight</div>
+                        <div class="col-2 padding-0" >น้ำหนักสุทธิ/Net Weight</div>
+                        <div class="col-1 padding-0" >Operate By</div>
+                        <div class="col-1 padding-0" >Check By</div>
+                        <div class="col-2 padding-0" >Date</div>
+                    </div>
+                </div>
+
+                <div class="container-fluid mdadw-div-container">
+                    <div class="row col-12">
+                        <div class="col-2 padding-0"><input type="text" id="mdadw_i_containner" class="mdadw-i-containner i-operate input-md form-control form-control-sm" /></div>
+                        <div class="col-2 padding-0"><input type="text" id="mdadw_i_total" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-total i-operate input-md form-control form-control-sm" /></div>
+                        <div class="col-2 padding-0"><input type="text" id="mdadw_i_tare" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-tare i-operate input-md form-control form-control-sm" /></div>
+                        <div class="col-2 padding-0"><input type="text" id="mdadw_i_net" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-net i-operate input-md form-control form-control-sm" /></div>
+                        @if (HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString() == "True")
+                        {
+                            <div class="col-1 padding-0"><a href="#" id="mdadw_l_operate" class="mdadw-l-operate">click</a></div>
+                        }
+                        else
+                        {
+                            <div class="col-1 padding-0"><span class="mdadw-l-operate"></span></div>
+                        }
+                        @if (HttpContext.Current.Session["AUTH_MIXING_CHECK"].ToString() == "True")
+                        {
+                            <div class="col-1 padding-0"><a href="#" id="mdadw_l_check" class="mdadw-l-check">click</a></div>
+                        }
+                        else
+                        {
+                            <div class="col-1 padding-0"><span class="mdadw-l-check"></span></div>
+                                }
+
+                                <div class="col-2 padding-0 md-mx-weight-check-dt"></div>
+                            </div>
+                        </div>
+
+                <div class="container-fluid" style="margin-top:10px">
+                    <div class="row col-12">
+                        <div><button type="button" id="mdadw_bt_add_container" class="btn bt-operate btn-md btn-primary">เพิ่ม</button> </div>
+                        <div style="margin-left:10px"><button type="button" id="mdadw_bt_remove_container" class="btn bt-operate btn-md btn-danger">ลบ</button> </div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">น้ำหนักผงยาที่รวมได้ / Total weight</div>
+                        <div class="col-3"><input type="text" id="mdadw_i_s_total" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-s-total input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">น้ำหนักตามทฤษฎี / Theoretical</div>
+                        <div class="col-3"><input type="text" id="mdadw_i_theoretical" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-theoretical input-md form-control form-control-sm" /></div>
+                        <div>kg</div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">คิดเป็น / % Yield</div>
+                        <div class="col-3"><input type="text" id="mdadw_i_s_yield" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadw-i-s-yield input-md form-control form-control-sm" /></div>
+                        <div>%</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdadw_bt_save" class="mdadw-bt-close bt-operate btn btn-success">Save</button>
+                <button type="button" class="mdadw-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+

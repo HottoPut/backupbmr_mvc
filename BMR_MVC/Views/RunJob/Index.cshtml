@@ -1,0 +1,492 @@
+﻿@{
+    /**/
+
+    /**/
+
+    ViewBag.Title = "BMR";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@if (HttpContext.Current.Session["AUTH_CREATE"].ToString() == "True")
+{
+    <script src="~/Scripts/jquery.inputmask.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <!--Signalr-->
+    <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+    <script src="~/signalr/hubs"></script>
+    @*<script src="~/Scripts/jasny-bootstrap.min.js"></script>*@
+    <!--Signalr-->
+    <style type="text/css">
+        .padding-5 {
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+
+        .hr-line-dashed {
+            border-top: 1px dashed #e7eaec;
+            color: #ffffff;
+            background-color: #ffffff;
+            height: 1px;
+            margin: 20px 0;
+        }
+
+        td.details-control {
+            background: url('https://datatables.net/examples/resources/details_open.png') no-repeat center center;
+            cursor: pointer;
+        }
+
+        tr.shown td.details-control {
+            background: url('https://datatables.net/examples/resources/details_close.png') no-repeat center center;
+        }
+
+        #bt_collapse {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            margin-right: 10px;
+            margin-bottom: 10px
+        }
+
+        .btn-circle {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+            padding: 6px 0px;
+            text-align: center;
+            font-size: 12px;
+            line-height: 1.42857;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+
+            $('[data-toggle="popover"]').popover({ trigger: 'hover', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+
+        var chatMx = $.connection.mxSignalR;
+        var chatPk = $.connection.pkSignalR;
+        var chatBcr = $.connection.bcrSignalR;
+        var chatBca = $.connection.bcaSignalR;
+
+        AutoCompleteItemName();
+        $('.i-start-dt').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+        $('.i-end-dt').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+        var authDisableBmr = JSON.parse('@HttpContext.Current.Session["AUTH_DISABLE_BMR"].ToString().ToLower()');
+            $("body").on("input", "#i_search_lot", function (e) {
+                $(this).val($(this).val().toUpperCase());
+            });
+
+            $("body").on("input", "#i_seach_item_name", function (e) {
+                $(this).val($(this).val().toUpperCase());
+                $('#sl_version option').remove();
+                $('#sl_version').append('<option disabled selected value>Revision</option>');
+            });
+
+            $("body").on("keyup", "#i_search_item_code", function (e) {
+                $(this).val($(this).val().toUpperCase());
+            $('#sl_version option').remove();
+            $('#sl_version').append('<option disabled selected value>Revision</option>');
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetVersionByItem", "RunJob")',
+                data: '{"itemCode":"' + $('#i_search_item_code').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('.i-item-name').val(data.ItemName);
+                    $('.i-uom').val(data.UomBom);
+                    for (var i = 0; i < data.BMRVersion.length; i++) {
+                        $('#sl_version').append('<option value="' + data.BMRVersion[i].Revision + '" selected="selected">' + data.BMRVersion[i].Revision+'</option>');
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+
+            $("body").on("click", "#bt_edit_bmr", function (e) {
+                //console.log($('#sp_item_code').text() + '|' + $('#sp_item_name').text() + '|' + $('#bt_status_bmr').val() + '|' + $('#sp_version').text() + '|' + $('#sp_start_dt').text() + '|' + $('#sp_end_dt').text());
+                //$('#modalEdtBmr').modal('show');
+            $('#modalEdtBmr').modal('show', { itemCode: $('#sp_item_code').text(), itemName: $('#sp_item_name').text(), statusBmr: $('#bt_status_bmr').val(), version: $('#sp_version').text(), startDate: $('#sp_start_dt').text(), endDate: $('#sp_end_dt').text() });
+        });
+        $("body").on("click", "#bt_search", function (e) {
+            $('.show-search').show();
+            $('#sp_item_code').text($('#i_search_item_code').val());
+            $('#sp_item_name').text($('#i_seach_item_name').val());
+            $('#sp_version').text($('#sl_version option:selected').val());
+
+              $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                  url: '@Url.Action("GetStatusBmr", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+                      console.log(data.StatusBmr[0].Status);
+                      $('#sp_start_dt').text(data.StatusBmr[0].StartDate);
+                      $('#sp_end_dt').text(data.StatusBmr[0].EndDate);
+                      if (data.StatusBmr[0].Status == 1) {
+                          $('#status_bmr').html((authDisableBmr == true ?"<br/><button class='btn btn-sm btn-primary' id='bt_edit_bmr'>Edit</button>":'') + (' <button class="btn btn-sm btn-success" value="1" id="bt_status_bmr">ใช้งาน</button>'));
+                      }
+                      else {
+                          $('#status_bmr').html((authDisableBmr == true ? "<br/><button class='btn btn-sm btn-primary' id='bt_edit_bmr'>Edit</button>" : '') + ' <button class="btn btn-sm btn-secondary" value="0" id="bt_status_bmr">ไม่ใช้งาน</button>');
+                      }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+             $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewMxCleanControl", "RunJob")',
+                  data: '{}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_clean_control').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+              $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewMx", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_mix_step').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+            //PK
+             $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewPkCC", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_pk_clean_control').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+             $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewPk", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_pk').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+            //Bcr
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewBcrCC", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_bcr_clean_control').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewBcr", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_bcr').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+            //Bca
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewBcaCC", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_bca_clean_control').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                  url: '@Url.Action("GetPartailViewBca", "RunJob")',
+                  data: '{"itemCode":"' + $('#i_search_item_code').val() + '","version":"' + $('#sl_version option:selected').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#div_bca').html(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $.connection.hub.start().done(function () {
+            $("body").on("click", "#bt_run_job", function (e) {
+                if ($("#i_search_lot").val().length > 0 && $('#i_search_batch_size').val() > 0) {
+                    $.ajax({
+                        type: 'POST',
+                        dataType: 'html',
+                        url: '@Url.Action("CreateRunJob", "RunJob")',
+                        data: '{"itemCode":"' + $('#i_search_item_code').val() + '","itemName":"' + $('#i_seach_item_name').val() + '","lot":"' + $('#i_search_lot').val() + '","revision":"' + $('#sl_version option:selected').val() + '","batchSize":' + $('#i_search_batch_size').val().replace(',', '') + ',"uom":"' + $('#i_search_uom').val() + '","remark":"' + $('#txa_remark').val() + '","startDt":"' + $('.i-start-dt').val() + '","endDt":"' + $('.i-end-dt').val() + '"}',
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            chatMx.server.send(0, 0, 0, 0, 0, 0, 0, 0);
+                            chatPk.server.send(0, 0, 0, 0, 0, 0, 0, 0);
+                            chatBcr.server.send(0, 0, 0, 0, 0, 0, 0, 0);
+                            chatBca.server.send(0, 0, 0, 0, 0, 0, 0, 0);
+                            window.location.href = '@Html.Raw(Url.Action("Index", "Default"))';
+                        },
+                        error: function (xhr, ajaxOptions, thrownError) {
+                            console.log(thrownError);
+                        }
+                    });
+                }
+            });
+        });
+            $("body").on("click", "#bt_collapse", function (e) {
+                var tableMX = $('#TMx').DataTable();
+                var tablePK = $('#TPk').DataTable();
+                var tableBCR = $('#TBcr').DataTable();
+                var tableBCA = $('#TBca').DataTable();
+
+                tableMX.ajax.reload(null, false);
+                tablePK.ajax.reload(null, false);
+                tableBCR.ajax.reload(null, false);
+                tableBCA.ajax.reload(null, false);
+            });
+
+
+        function AutoCompleteItemName() {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetItem", "RunJob")',
+                data: '{"itemName":"test"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    var itemName = [];
+                    for (var i = 0; i < data.GetItemFG.length; i++) {
+                        itemName.push(data.GetItemFG[i].itemNameUom);
+                    }
+                    $('.i-item-name').autocomplete({
+                        //delay: 100,
+                        source: function (request, response) {
+                            var results = $.ui.autocomplete.filter(itemName, request.term);
+                            response(results.slice(0, 10));
+                        }, select: function (event, ui) {
+                            event.preventDefault();
+                            for (var i = 0; i < data.GetItemFG.length; i++) {
+                                if (data.GetItemFG[i].itemNameUom == ui.item.value) {
+                                    $('.i-item-code').val(data.GetItemFG[i].itemCode);
+                                    $('.i-item-name').val(data.GetItemFG[i].itemName);
+                                      $('#sl_version option').remove();
+                                            $.ajax({
+                                                type: 'POST',
+                                                dataType: 'json',
+                                                url: '@Url.Action("GetVersionByItem", "RunJob")',
+                                                data: '{"itemCode":"' + $('#i_search_item_code').val() + '"}',
+                                                contentType: "application/json; charset=utf-8",
+                                                success: function (data) {
+                                                    $('.i-item-name').val(data.ItemName);
+                                                    $('.i-uom').val(data.UomBom);
+                                                    for (var i = 0; i < data.BMRVersion.length; i++) {
+                                                        $('#sl_version').append('<option value="' + data.BMRVersion[i].Revision + '" selected="selected">' + data.BMRVersion[i].Revision+'</option>');
+                                                    }
+                                                },
+                                                error: function (xhr, ajaxOptions, thrownError) {
+                                                    console.log(thrownError);
+                                                }
+                                            });
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+                });
+        }
+    });
+    </script>
+    <br />
+    <div class="card">
+        <div class="card-header">Run Job</div>
+        <div class="card-body">
+            <div class="container col-md-12">
+                <div class="row">
+                    <div class="col-md-2 padding-5"><b>Item Code</b><input type="text" class="i-item-code form-control form-control-sm" id="i_search_item_code" placeholder="Item Code" /></div>
+                    <div class="col-md-2 padding-5"><b>Item Name</b><input type="text" class="i-item-name form-control form-control-sm" id="i_seach_item_name" placeholder="Item Name" /></div>
+                    <div class="col-md-2 padding-5"><b>Lot</b><input type="text" class="i-lot form-control form-control-sm" id="i_search_lot" placeholder="Lot" /></div>
+                    <div class="col-md-2 padding-5"><b>Batch Size</b><input type="text" class="i-batch-size form-control form-control-sm" onkeypress="return isNumberKey(this, event);" id="i_search_batch_size" style="text-align:right" placeholder="Batch Size" /></div>
+                    <div class="col-md-2 padding-5"><b>Uom</b><input type="text" class="i-uom form-control form-control-sm" id="i_search_uom" placeholder="Uom" /></div>
+                    <div>
+                        <b>Revision</b>
+                        <select id="sl_version" class="sl-version form-control form-control-sm">
+                            <option disabled selected value>Revision</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="hr-line-dashed"></div>
+            <div class="container-fluid">
+                <div class="row">
+                    <div><b>เริ่มเวลา : </b></div>
+                    <div><input type="text" class="i-start-dt form-control form-control-sm" /></div>
+                    <div><b>ถึงเวลา : </b></div>
+                    <div><input type="text" class="i-end-dt form-control form-control-sm" /></div>
+                </div>
+            </div>
+            <div class="hr-line-dashed"></div>
+            <div class="container-fluid">
+                <div class="row">
+                    <div style="display:inline-block;vertical-align:top">
+                        <span style="font-size:10pt"><b>Remark :</b></span>
+                    </div>&nbsp;&nbsp;
+                    <div class="justify-content-start" style="width:90%;display:inline-block">
+                        <textarea id="txa_remark" class="form-control form-control-sm"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="hr-line-dashed"></div>
+            <span><input id="bt_search" type="button" value="Search" class="btn btn-sm btn-primary" /></span>
+            <span><input id="bt_run_job" type="button" value="Run" class="btn btn-sm btn-success" /></span>
+            <div class="hr-line-dashed show-search" style="display:none"></div>
+
+            <div class="container col-md-12 show-search" style="display:none">
+                <div class="row">
+                    <div class="col-1">
+                        <b>Item Code</b><br /><span style="white-space: nowrap;" id="sp_item_code"></span>
+                    </div>
+                    <div class="col-4">
+                        <b>Item Name</b><br /><span style="white-space: nowrap;" id="sp_item_name"></span>
+                    </div>
+                    <div class="col-2" style="white-space: nowrap;">
+                        <b>Revision</b><br /><span id="sp_version"></span>
+                    </div>
+                    <div class="col-1" style="white-space: nowrap;">
+                        <b>เริ่มวันที่</b><br /><span id="sp_start_dt"></span>
+                    </div>
+                    <div class="col-1" style="white-space: nowrap;">
+                        <b>ถึงวันที่</b><br /><span id="sp_end_dt"></span>
+                    </div>
+                    <div class="col-2" id="status_bmr">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="hr-line-dashed show-search" style="display:none"></div>
+
+
+            <div class="container col-md-12 show-search" style="display:none">
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Mixing Clean Control</b></span>
+                    </div>
+                    <div id="div_clean_control"></div>
+                </div>
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Mixing Step</b></span>
+                    </div>
+                    <div id="div_mix_step"></div>
+                </div>
+
+
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Packing Clean Control</b></span>
+                    </div>
+                    <div id="div_pk_clean_control"></div>
+                </div>
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Packing Procedure</b></span>
+                    </div>
+                    <div id="div_pk"></div>
+                </div>
+
+
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Compressing Clean Control</b></span>
+                    </div>
+                    <div id="div_bcr_clean_control"></div>
+                </div>
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Compressing Procedure</b></span>
+                    </div>
+                    <div id="div_bcr"></div>
+                </div>
+
+
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space:nowrap;"><b>Coating Clean Control</b></span>
+                    </div>
+                    <div id="div_bca_clean_control"></div>
+                </div>
+                <div class="hr-line-dashed show-search" style="display:none"></div>
+                <div class="container col-md-12 show-search" style="display:none">
+                    <div class="row">
+                        <span class="col-md-2" style="color:red;white-space: nowrap;"><b>Coating Procedure</b></span>
+                    </div>
+                    <div id="div_bca"></div>
+                </div>
+            </div>
+        </div>
+        <div id="mdedt_bmr">@Html.Partial("ModalEditBmr")</div>
+
+
+        <div class="form-group" style="float:right; position: relative; ">
+            <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6">
+                <button type="submit" class="btn btn-secondary btn-md btn-circle" id="bt_collapse">
+                    <i class="fa fa-2x fa-compress" aria-hidden="true"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+}
+else
+{
+    Response.Redirect("~/Default/Index");
+}

@@ -1,0 +1,121 @@
+﻿<script>
+    $(document).ready(function () {
+
+        $('.mdedt-start-dt').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+        $('.mdedt-end-dt').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+
+        $('#modalTMainEdit').on('shown.bs.modal', function (e) {
+
+            $('#mdedt_div_job_sysid').text(e.relatedTarget.jobSysId);
+
+              $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetRunJobHead", "Default")',
+                  data: '{"jobSysId":' + e.relatedTarget.jobSysId+'}',
+                contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+                      $('#mdedt_lot').val(data.GetRunJobHead[0].jobLot);
+                      $('#mdedt_batch_size').val(data.GetRunJobHead[0].jobBatchSize);
+                      $('#mdedt_uom').val(data.GetRunJobHead[0].jobUom);
+                      $('#mdedt_start_dt').val(data.GetRunJobHead[0].jobStartDt);
+                      $('#mdedt_end_dt').val(data.GetRunJobHead[0].jobEndDt);
+                      $('#txa_remark').val(data.GetRunJobHead[0].jobRemark);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+
+        $("body").on("click", "#mdedt_bmr_bt_save", function (e) {
+            var table = $('#example').DataTable();
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("UpdateRunJobHead", "Default")',
+                data: '{"jobSysid":' + $('#mdedt_div_job_sysid').text() + ',"lot":"' + $('#mdedt_lot').val() + '","batchSize":' + $('#mdedt_batch_size').val() + ',"uom":"' + $('#mdedt_uom').val() + '","startDt":"' + $('#mdedt_start_dt').val() + '","endDt":"' + $('#mdedt_end_dt').val() + '","remark":"' + $('#txa_remark').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#modalTMainEdit').modal('toggle');
+                     table.ajax.reload(null, false);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("#modalTMainEdit").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainEdit">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">แก้ไข Job</h4>
+                <button type="button" id="mdadt_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdedt_div_job_sysid" style="display:none" class="mdedt-div-job-sysid input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">Lot</div>
+                        <div class="col-6">
+                            <input type="text" id="mdedt_lot" class="input-md form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-3">Batch Size</div>
+                        <div class="col-6">
+                            <input type="text" id="mdedt_batch_size" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-3">Uom</div>
+                        <div class="col-6">
+                            <input type="text" id="mdedt_uom" class="input-md form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-3">Start Dt</div>
+                        <div class="col-6">
+                            <input type="text" id="mdedt_start_dt" class="mdedt-start-dt input-md form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-3">End Dt</div>
+                        <div class="col-6">
+                            <input type="text" id="mdedt_end_dt" class="mdedt-end-dt input-md form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="hr-line-dashed"></div>
+                    <div class="row">
+                        <div class="col-3">remark</div>
+                        <div class="col-8">
+                            <textarea id="txa_remark" class="form-control form-control-sm"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdedt_bmr_bt_save" class="btn btn-success">Save</button>
+                <button type="button" id="mdadt_bt_close" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

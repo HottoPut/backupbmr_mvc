@@ -1,0 +1,55 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace BMR_MVC.Models
+{
+    public class QueryImportExcel
+    {
+        String query;
+       public String InsertClPK() {
+            query = "EXEC INSERT_BMR_PK_CLEAN_CONTROL @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@EQUIPMENT_NO = @P_EQUIPMENT_NO,@EQUIPMENT_NAME = @P_EQUIPMENT_NAME,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID ,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID,@USER_ID = @P_USER_ID";
+            return query;
+        }
+        public String InsertPK()
+        {
+            query = "EXEC INSERT_BMR_PK @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@STEP = @P_STEP,@STEP_DESC = @P_STEP_DESC,@STEP_DESC_ENG = @P_STEP_DESC_ENG,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@REQ_HUMUDITY_YN = @P_REQ_HUMUDITY_YN,@REQ_PRESS_YN = @P_REQ_PRESS_YN,@REQ_TEMP_YN = @P_REQ_TEMP_YN,@REQ_VACC_YN = @P_REQ_VACC_YN,@REQ_STAR_STOP_YN = @P_REQ_STAR_STOP_YN,@REQ_WEIGHT_YN  = @P_REQ_WEIGHT_YN,@STANDARD_W = @P_STANDARD_W,@REQ_WEIGHT_SAMPLE_YN = @P_REQ_WEIGHT_SAMPLE_YN,@REQ_CLEAN_YN = @P_REQ_CLEAN_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID";
+            return query;
+        }
+        public String InsertClBCR()
+        {
+            query = "EXEC INSERT_BMR_BCR_CLEAN_CONTROL @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@EQUIPMENT_NO = @P_EQUIPMENT_NO,@EQUIPMENT_NAME = @P_EQUIPMENT_NAME,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID,@USER_ID = @P_USER_ID";
+            return query;
+        }
+        public String InsertBCR()
+        {
+            query = "EXEC INSERT_BMR_BCR @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@STEP = @P_STEP,@STEP_DESC = @P_STEP_DESC,@STEP_DESC_ENG = @P_STEP_DESC_ENG,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@REQ_HUMUDITY_YN = @P_REQ_HUMUDITY_YN,@REQ_PRESS_YN = @P_REQ_PRESS_YN,@REQ_TEMP_YN = @P_REQ_TEMP_YN,@REQ_VACC_YN = @P_REQ_VACC_YN,@REQ_STAR_STOP_YN = @P_REQ_STAR_STOP_YN,@REQ_WEIGHT_YN  = @P_REQ_WEIGHT_YN,@STANDARD_W = @P_STANDARD_W,@REQ_WEIGHT_SAMPLE_YN = @P_REQ_WEIGHT_SAMPLE_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID";
+            return query;
+        }
+        public String InsertClBCA()
+        {
+            query = "EXEC INSERT_BMR_BCA_CLEAN_CONTROL @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@EQUIPMENT_NO = @P_EQUIPMENT_NO,@EQUIPMENT_NAME = @P_EQUIPMENT_NAME,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID,@USER_ID = @P_USER_ID";
+            return query;
+        }
+        public String InsertBCA()
+        {
+            query = "EXEC INSERT_BMR_BCA @ITEM_CODE = @P_ITEM_CODE,@RUN_NO = @P_RUN_NO,@STEP = @P_STEP,@STEP_DESC = @P_STEP_DESC,@STEP_DESC_ENG = @P_STEP_DESC_ENG,@REQ_IMAGE_YN = @P_REQ_IMAGE_YN,@REQ_HUMUDITY_YN = @P_REQ_HUMUDITY_YN,@REQ_PRESS_YN = @P_REQ_PRESS_YN,@REQ_TEMP_YN = @P_REQ_TEMP_YN,@REQ_VACC_YN = @P_REQ_VACC_YN,@REQ_STAR_STOP_YN = @P_REQ_STAR_STOP_YN,@REQ_WEIGHT_YN  = @P_REQ_WEIGHT_YN,@STANDARD_W = @P_STANDARD_W,@REQ_WEIGHT_SAMPLE_YN = @P_REQ_WEIGHT_SAMPLE_YN,@GROUP_OPERATE_ID = @P_GROUP_OPERATE_ID,@GROUP_CHECK_ID = @P_GROUP_CHECK_ID";
+            return query;
+        }
+        public String QueryGetRevision() {
+            query = @"select 
+                        CASE WHEN BMR_RV2<5 THEN 'R'+CAST(SUBSTRING(BMR_RV1,LEN(BMR_RV1)-1,2) AS NVARCHAR)+'-'+CAST((BMR_RV2+1) AS NVARCHAR) ELSE 'R'+CAST((BMR_RV1+1) AS NVARCHAR)+'-1' END+'/'+CONVERT(varchar,SYSDATETIME(),4) AS REVISION
+                        from(
+                        select BMR_ITEM_CODE
+                        ,'00'+CAST(MAX(ISNULL(BMR_RV1,0)) AS NVARCHAR) BMR_RV1
+                        ,CAST(MAX(ISNULL(BMR_RV2,0)) AS NVARCHAR) BMR_RV2
+                        from BMR_HEAD
+                        WHERE BMR_ITEM_CODE = @P_ITEM_CODE
+                        AND BMR_RV1 =( SELECT MAX(BMR_RV1) FROM BMR_HEAD WHERE BMR_ITEM_CODE= @P_ITEM_CODE)
+                        group by BMR_ITEM_CODE)data1
+                        ";
+            return query;
+        }
+    }
+}

@@ -1,0 +1,83 @@
+﻿
+<script>
+    $(document).ready(function () {
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        checkAuthOperate();
+
+        $('#modalTMainWeightSample').on('shown.bs.modal', function (e) {
+               $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("GetWeightOfSample", "Coated")',
+                 data: '{"jobSysid":' + $('#mdadws_div_job_sysid').text() + ',"step":' + $('#mdadws_div_step').text() + ',"runNo":' + $('#mdadws_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                   success: function (data) {
+                       $('#mdadws_i_ws').val(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        })
+        $("#modalTMainWeightSample").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+         $("body").on("click", "#mdadws_bt_save", function (e) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                url: '@Url.Action("SaveWeightOfSample", "Coated")',
+                data: '{"jobSysid":' + $('#mdadws_div_job_sysid').text() + ',"step":' + $('#mdadws_div_step').text() + ',"runNo":' + $('#mdadws_div_no').text() + ',"weight":' + $('#mdadws_i_ws').val() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#modalTMainWeightSample').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainWeightSample">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">ตัวอย่างผงยา</h4>
+                <button type="button" id="mdadws_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadws_div_job_sysid" style="display:none" class="mdadt-div-job-sysid input-md"></div>
+                <div id="mdadws_div_step" style="display:none" class="mdadt-div-step input-md"></div>
+                <div id="mdadws_div_no" style="display:none" class="mdadt-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-4">เก็บตัวอย่างผงยา / weight of sample</div>
+                        <div class="col-3"><input type="text" id="mdadws_i_ws" onkeypress="return isNumberKey(this, event);" style="text-align:right" class="mdadws-i-ws i-operate input-md form-control form-control-sm" /></div>
+                        <div>g.</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdadws_bt_save" class="mdadt-bt-close mdadws-i-ws bt-operate btn btn-success">Save</button>
+                <button type="button" id="mdadws_bt_close" class="mdadt-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

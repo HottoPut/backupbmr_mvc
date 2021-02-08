@@ -1,0 +1,109 @@
+﻿<script>
+    $(document).ready(function () {
+        $('.i-date').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+
+        $('#modalTMainTime').on('shown.bs.modal', function (e) {
+              $.ajax({
+                   type: 'POST',
+                   dataType: 'json',
+                   url: '@Url.Action("GetTime", "Packing")',
+                   data: '{"jobSysid":' + $('#mdaddt_div_job_sysid').text() + ',"step":' + $('#mdaddt_div_step').text() + ',"runNo":' + $('#mdaddt_div_no').text() + '}',
+                   contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+                      console.log(JSON.stringify(data));
+                      $('.mdaddt-i-fn-mx-dt').eq(0).val(data.GetTime[0].fnMxDt);
+                      $('.mdaddt-i-st-fil-dt').eq(0).val(data.GetTime[0].stFilDt);
+                      $('.mdaddt-i-fn-fil-dt').eq(0).val(data.GetTime[0].fnFilDt);
+                      $('.mdaddt-i-fn-label-dt').eq(0).val(data.GetTime[0].fnLabelDt);
+                      $('.mdaddt-i-fn-carton-dt').eq(0).val(data.GetTime[0].fnCartonDt);
+                   },
+                   error: function (xhr, ajaxOptions, thrownError) {
+                       console.log(thrownError);
+                   }
+               });
+        });
+
+        $("body").on("click", "#mdaddt_bt_save", function (e) {
+               $.ajax({
+                   type: 'POST',
+                   dataType: 'json',
+                   url: '@Url.Action("SaveTime", "Packing")',
+                   data: '{"jobSysid":' + $('#mdaddt_div_job_sysid').text() + ',"step":' + $('#mdaddt_div_step').text() + ',"runNo":' + $('#mdaddt_div_no').text() + ',"fnMxDt":"' + $('.mdaddt-i-fn-mx-dt').val() + '","stFilDt":"' + $('.mdaddt-i-st-fil-dt').val() + '","fnFilDt":"' + $('.mdaddt-i-fn-fil-dt').val() + '","fnLabelDt":"' + $('.mdaddt-i-fn-label-dt').val() + '","fnCartonDt":"' + $(".mdaddt-i-fn-carton-dt").val() + '"}',
+                   contentType: "application/json; charset=utf-8",
+                   success: function (data) {
+                       $('#modalTMainTime').modal('toggle');
+                   },
+                   error: function (xhr, ajaxOptions, thrownError) {
+                       console.log(thrownError);
+                   }
+               });
+        });
+
+        $("#modalTMainTime").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainTime">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">เวลา</h4>
+                <button type="button" id="mdadt_bt_close" class="mdadh-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdaddt_div_job_sysid" style="display:none" class="mdaddt-div-job-sysid input-md"></div>
+                <div id="mdaddt_div_step" style="display:none" class="mdaddt-div-step input-md"></div>
+                <div id="mdaddt_div_no" style="display:none" class="mdaddt-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-5">วันที่ผสมยาเสร็จ / Finished Mixing date</div>
+                        <div class="col-3"><input type="text" class="mdaddt-i-fn-mx-dt i-date form-control form-control-sm input-md" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-5">วันที่เริ่มบรรจุ / Start filling date</div>
+                        <div class="col-3"><input type="text" class="mdaddt-i-st-fil-dt i-date form-control form-control-sm input-md" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-5">วันที่บรรจุเสร็จ / Finished filling date</div>
+                        <div class="col-3"><input type="text" class="mdaddt-i-fn-fil-dt i-date form-control form-control-sm input-md" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-5">วันที่ติดฉลากเสร็จ / Finished labeling date</div>
+                        <div class="col-3"><input type="text" class="mdaddt-i-fn-label-dt i-date form-control form-control-sm input-md" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-5">วันที่บรรจุยาลงกล่องเสร็จ / Finished cartoning date</div>
+                        <div class="col-3"><input type="text" class="mdaddt-i-fn-carton-dt i-date form-control form-control-sm input-md" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <span class="error" style="color:red;display:none">Error</span>
+                    <button type="button" id="mdaddt_bt_save" class="mdadp-bt-close bt-operate btn btn-success">Save</button>
+                    <button type="button" class="mdadh-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

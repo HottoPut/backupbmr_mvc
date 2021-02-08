@@ -1,0 +1,27 @@
+﻿<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            @*<th></th>*@
+            <th></th>
+            <th style="display:none"></th>
+            @*<th>Item Code</th>*@
+            <th>Item Name</th>
+            <th>Lot</th>
+            <th>Batch Size</th>
+            <th>Start Dt</th>
+            <th>End Dt</th>
+            <th>User Progress</th>
+            <th>QA Progress</th>
+            <th>PD</th>
+            <th>QA</th>
+            @if (HttpContext.Current.Session["AUTH_EDIT_JOB"].ToString() == "True")
+            {
+                <th>Action</th>
+            }
+            else
+            {
+                <th style="display:none">Action</th>
+            }
+        </tr>
+    </thead>
+</table>

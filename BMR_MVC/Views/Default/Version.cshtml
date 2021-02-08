@@ -1,0 +1,13 @@
+﻿
+@{
+    Layout = null;
+}
+@model List<BMR_MVC.Models.BmrVersionInfo>
+<select id="sl_version"  style="width:100%;font-size:8.6pt;font-family:Tahoma">
+    <option>เลือกพนักงานเก็บเงิน</option>
+
+    @foreach (var item in Model)
+    {
+        <option value='@item.Vesion'>@item.Vesion</option>
+    }
+</select>

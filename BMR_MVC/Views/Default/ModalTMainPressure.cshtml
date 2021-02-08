@@ -1,0 +1,86 @@
+﻿<script>
+    $(document).ready(function () {
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        checkAuthOperate();
+
+        $('#modalTMainPressure').on('shown.bs.modal', function (e) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetPressure", "Default")',
+                data: '{"jobSysid":' + $('#mdadp_div_job_sysid').text() + ',"step":' + $('#mdadp_div_step').text() + ',"runNo":' + $('#mdadp_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#mdadp_i_pressure').val(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("body").on("click", "#mdadp_bt_save", function (e) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                url: '@Url.Action("SavePressure", "Default")',
+                data: '{"jobSysid":' + $('#mdadp_div_job_sysid').text() + ',"step":' + $('#mdadp_div_step').text() + ',"runNo":' + $('#mdadp_div_no').text() + ',"pressure":' + $('#mdadp_i_pressure').val() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#modalTMainPressure').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("#modalTMainPressure").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainPressure">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">ความดันอากาศ</h4>
+                <button type="button" id="mdadp_bt_close" class="mdadp-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadp_div_job_sysid" style="display:none" class="mdadp-div-job-sysid input-md"></div>
+                <div id="mdadp_div_step" style="display:none" class="mdadp-div-step input-md"></div>
+                <div id="mdadp_div_no" style="display:none" class="mdadp-div-no input-md"></div>
+                <!--Parameter-->
+
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">ความดันอากาศ/Pressure</div>
+                        <div class="col-3"><input type="text" id="mdadp_i_pressure" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadp-i-pressure i-operate input-md form-control form-control-sm" /></div>
+                        <div>Inch of water / Pa</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdadp_bt_save" class="mdadp-bt-close mdadp-i-pressure bt-operate btn btn-success">Save</button>
+                <button type="button" class="mdadp-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+            <!-- Modal footer -->
+        </div>
+    </div>
+</div>
+

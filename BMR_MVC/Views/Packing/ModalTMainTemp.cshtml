@@ -1,0 +1,84 @@
+﻿<script>
+    $(document).ready(function () {
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        checkAuthOperate();
+
+        $("body").on("click", "#mdadt_bt_save", function (e) {
+             $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                 url: '@Url.Action("SaveTemp", "Packing")',
+                 data: '{"jobSysid":' + $('#mdadt_div_job_sysid').text() + ',"step":' + $('#mdadt_div_step').text() + ',"runNo":' + $('#mdadt_div_no').text() + ',"temp":'+$('#mdadt_i_temp').val()+ '}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#modalTMainTemp').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+      
+        $('#modalTMainTemp').on('shown.bs.modal', function (e) {
+               $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("GetTemp", "Packing")',
+                 data: '{"jobSysid":' + $('#mdadt_div_job_sysid').text() + ',"step":' + $('#mdadt_div_step').text() + ',"runNo":' + $('#mdadt_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                   success: function (data) {
+                       $('#mdadt_i_temp').val(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        })
+        $("#modalTMainTemp").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainTemp">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">อุณหภูมิ</h4>
+                <button type="button" id="mdadt_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadt_div_job_sysid" style="display:none" class="mdadt-div-job-sysid input-md"></div>
+                <div id="mdadt_div_step" style="display:none" class="mdadt-div-step input-md"></div>
+                <div id="mdadt_div_no" style="display:none" class="mdadt-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-4">อุณหภูมิที่อ่านได้เท่ากับ/Temperature</div>
+                        <div class="col-3"><input type="text" id="mdadt_i_temp" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadt-i-temp i-operate input-md form-control form-control-sm" /></div>
+                        <div>°C</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdadt_bt_save" class="mdadt-bt-close mdadt-i-temp bt-operate btn btn-success">Save</button>
+                <button type="button" id="mdadt_bt_close" class="mdadt-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

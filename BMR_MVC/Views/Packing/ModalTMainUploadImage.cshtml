@@ -1,0 +1,173 @@
+﻿@*@model BMR_MVC.Models.JobInfo*@
+
+@*<script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>*@
+<script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+<script>
+    $(document).ready(function () {
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        checkAuthOperate()
+        function OnSuccess(data) {
+            alert('HTTP Status Code: ' + data);
+        }
+        $("#fileupload").change(function () {
+            var jobid = $("#mdadt_div_job_sysid").text();
+            var jobstep = $("#mdadt_div_step").text();
+            var jobrunno = $("#mdadt_div_no").text();
+            var origin = window.location.origin;
+            var itemCode = $('#mdadt_div_item_code').text();
+            var lot = $('#mdadt_div_lot').text();
+            $("#name_url").val(origin);
+            $("#jobsysid").val(jobid);
+            $("#jobstep").val(jobstep);
+            $("#jobrunno").val(jobrunno);
+            $("#itemCode").val(itemCode);
+            $("#lot").val(lot);
+            //alert(jobid);
+            if (typeof (FileReader) != "undefined") {
+                var dvPreview = $("#dvPreview");
+                dvPreview.html("");
+                var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.jpg|.jpeg|.gif|.png|.bmp)$/;
+                $($(this)[0].files).each(function () {
+                    var file = $(this);
+                    if (regex.test(file[0].name.toLowerCase())) {
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            var img = $("<img />");
+                            img.attr("style", "height:304px;width: 236px");
+                            img.attr("src", e.target.result);
+                            dvPreview.append(img);
+                        }
+                        reader.readAsDataURL(file[0]);
+
+                    } else {
+                        alert(file[0].name + " is not a valid image file.");
+                        dvPreview.html("");
+                        return false;
+                    }
+                });
+            } else {
+                alert("This browser does not support HTML5 FileReader.");
+            }
+        });
+        //$('body').on('change', '.upload-image', function () {
+        //    //readURL(this);
+        //});
+        $("body").on("click", "#mdadt_bt_add_time", function (e) {
+            var modalOperate = '';
+            var modalCheck = '';
+            $('<div class="container-fluid mdby-take-image"> ' +
+                '<input class="upload-image" type="file" accept="image/*" capture="camera" name="files" id="ip_upload" />' +
+                '<img id="imgview" class="image-preview" src="#" alt="your image" width="193" height="130" />' +
+                ' </div>').insertAfter($('.mdby-take-image').eq($('.mdby-take-image').length - 1));
+        });
+        $("body").on("click", "#mdadt_bt_remove_time", function (e) {
+            if ($('.mdby-take-image').length > 1) {
+                $('.mdby-take-image').eq($('.mdby-take-image').length - 1).remove();
+            }
+        });
+        $('#modalTMainUploadImage').on('shown.bs.modal', function (e) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetImage", "Packing")',
+                data: '{"jobSysid":' + $('#mdadt_div_job_sysid').text() + ',"step":' + $('#mdadt_div_step').text() + ',"runNo":' + $('#mdadt_div_no').text() + ',"itemCode":"' + $('#mdadt_div_item_code').text() + '","lot":"' + $('#mdadt_div_lot').text()+'"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data.GetImage.length > 0) {
+                        //alert($.trim(data.GetImage[1].imagepath));
+                        $('.remark').eq(0).val(data.GetImage[0].imageremark);
+                        //$('.test').eq(0).val(data.GetImage[1].imagepath);
+                        for (var i = 0; i < data.GetImage.length; i++) {
+                            if (data.GetImage[i].imagepath.length > 0) {
+                                var img = document.createElement("IMG");
+                                img.height = "304";
+                                img.width = "236";
+                                img.src = $.trim(data.GetImage[i].imagepath);
+                                console.log(data.GetImage[i].imagepath);
+                                dvPreview.appendChild(img);
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+        $("#modalTMainUploadImage").on("hidden.bs.modal", function (e) {
+            $('.input-md').text('');
+            $('.input-md').val('');
+            $('.remark').text('');
+            $('.remark').val('');
+            document.getElementById("fileupload").value = "";
+            $('img').hide();
+        });
+
+        $("body").on("click", "#mdimg_bt_save", function (e) {
+            $('#mdimg_bt_save').submit();
+            $('#modalTMainUploadImage').modal('toggle');
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+
+    });
+</script>
+<div class="modal fade" id="modalTMainUploadImage">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">ถ่ายรูป</h4>
+                <button type="button" id="mdadt_bt_close" class="mdadh-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+            @*@using (@Html.BeginForm("Upload", "Login", FormMethod.Post, new { enctype = "multipart/form-data" }))*@
+            @using (Ajax.BeginForm("UploadImage", "Packing", new AjaxOptions { HttpMethod = "POST", OnSuccess = "OnSuccess" }, new { enctype = "multipart/form-data" }))
+            {
+                <div class="modal-body">
+
+                    <input id="name_url" type="text" name="name_url" class="input-md" style="display:none" readonly />
+                    <!--Parameter-->
+                    <input id="jobsysid" name="jobid" class="input-md" style="display:none" readonly />
+                    <input id="jobstep" name="jobstep" class="input-md" style="display:none" readonly />
+                    <input id="jobrunno" name="jobrunno" class="input-md" style="display:none" readonly />
+                    <input id="itemCode" name="itemCode" class="input-md" style="display:none" readonly />
+                    <input id="lot" name="lot" class="input-md" style="display:none" readonly />
+
+                    <div id="mdadt_div_job_sysid" name="jobsysiddiv" style="display:none" class="mdadt-div-job-sysid input-md"></div>
+                    <div id="mdadt_div_step" name="stepdiv" style="display:none" class="mdadt-div-step input-md"></div>
+                    <div id="mdadt_div_no" name="runnodiv" style="display:none" class="mdadt-div-no input-md"></div>
+                    <div id="mdadt_div_item_code" name="runnodiv" style="display:none" class="mdadt-div-item-code input-md"></div>
+                    <div id="mdadt_div_lot" name="runnodiv" style="display:none" class="mdadt-div-lot input-md"></div>
+                    <!--Parameter-->
+
+
+                    <input id="fileupload" type="file" name="files" class="i-operate" multiple="multiple" />
+                    <hr />
+                    <b>Live Preview</b>
+                    <br />
+                    <br />
+
+
+                    <div id="dvPreview">
+                    </div>
+                    <br />
+                    <br />
+                    <div class="form-group">
+                        <label for="comment">หมายเหตุ:</label>
+                        @*<input id="ip_remark" type="text" class="form-control remark" name="remark" />*@
+                        <textarea id="ip_remark" class="form-control remark" name="remark"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <span class="error" style="color:red;display:none">Error</span>
+                    <button type="submit" id="mdimg_bt_save" class="mdadp-bt-close bt-operate i-operate mdadt-i-image btn btn-success">Save</button>
+                    <button type="button" class="mdadh-bt-close btn btn-danger" id="md_close" data-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>

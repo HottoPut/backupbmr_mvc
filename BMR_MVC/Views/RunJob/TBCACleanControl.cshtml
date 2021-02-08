@@ -1,0 +1,59 @@
+﻿<script>
+    $(document).ready(function () {
+        var table = $('#TBcaCC').DataTable({
+            dom: 't',
+            buttons: [
+                {
+                    className: 'btn btn-primary btn-sm',
+                    text: 'Create',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "ImportExcel"))';
+                    }
+                }, {
+                    className: 'btn btn-success btn-sm',
+                    text: 'Run Job',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "RunJob"))';
+                    }
+                }
+            ],
+            "ajax": {
+                "url": '@Url.Action("GetBcaCleanControl", "RunJob")',
+                "type": "POST",
+                "data": {
+                    "itemCode": $('#sp_item_code').text(),
+                    "revision": $('#sp_version').text()
+
+                }
+            },
+            "columns": [
+                //{
+                //    "className": 'details-control',
+                //    "orderable": false,
+                //    "data": null,
+                //    "defaultContent": ''
+                //},
+                //{ "data": "itemCode" },
+                { "data": "runNo" },
+                { "data": "equipmentNo" },
+                { "data": "equipmentName" },
+                { "data": "groupClean" },
+                { "data": "groupCheck" },
+                { "data":"reqImageYn"}
+            ],
+            //"order": [[1, 'asc']]
+        });
+    });
+</script>
+<table id="TBcaCC" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Run No</th>
+            <th>Equipment No</th>
+            <th>Equipment Name</th>
+            <th>Group Clean</th>
+            <th>Group Check</th>
+            <th>Image YN</th>
+        </tr>
+    </thead>
+</table>

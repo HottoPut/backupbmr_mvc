@@ -1,0 +1,243 @@
+﻿
+@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!--css-->
+<link href="~/Content/mixing-procedure.css" rel="stylesheet" />
+
+<!--script-->
+<script src="~/Scripts/mxpd/create.js"></script>
+
+<script>
+    $(document).ready(function () {
+
+        //Get item code and bom sf
+        AutoCompleteItemName('@Url.Action("GetItem", "CreateMXPD")', '@Html.Raw(Url.Action("TBOMSF", "CreateMXPD", new { itemCode = "__itemCode__" }))');
+
+        $("body").on("click", ".btn-add-cc", function (e) {
+            $('<div class="container-fluid div-cc" style="margin-top:10px">' +
+                '<div class="row col-12">' +
+                '<div class="col-1">' + ($('.div-cc').length + 1) + '</div>' +
+                '<div class="col-3"><input type="text" class="i-cc-equipt-no form-control form-control-sm"/></div>' +
+                '<div class="col-3"><input type="text" class="i-cc-equipt-name form-control form-control-sm"/></div>'+
+                '</div>'
+            ).insertAfter($('.div-cc').eq($('.div-cc').length - 1));
+        });
+
+        $("body").on("click", ".btn-remove-cc", function (e) {
+            if ($('.div-cc').length > 1) {
+                $('.div-cc').eq($('.div-cc').length - 1).remove();
+            }
+        });
+
+        $("body").on("click", ".bt-add-mx-no", function (e) {
+            
+            $(".div-mx-sub").eq($(this).closest('.div-mx').index('.div-mx')).append('<div class="container-fluid div-mx-sub">' +
+                '<div style="margin-top:10px" class="row div-mx-sub-i">' +
+                '<div>' + ($(this).index() + 1) + '.</div>' +
+                '<div>' + ($(this).closest('.div-mx').find('.div-mx-sub-i').length + 1) + '</div>' +
+                '<div class="col-11"><textarea rows="1" class="form-control form-control-sm"></textarea></div>' +
+                '<div><button class="btn btn-sm bt-remove-mx-no text-danger"><i class="fa fa-times" aria-hidden="true"></i></button></div>'+
+                '</div>' +
+                '<div class="row col-12">' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">องศา</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">ความดันอากาศ</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">ความชื้น</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">เวลา</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">Weight</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">Weight of sample</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">Vacuum</label>' +
+                '</div>' +
+                '</div>' +
+                '<div>' +
+                '<div class="form-check form-check-inline">' +
+                '<input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">' +
+                '<label class="form-check-label" for="inlineCheckbox1">Check list</label>' +
+                '</div>' +
+                '</div>');
+        });
+
+        $("body").on("click", ".bt-remove-mx-no", function (e) {
+            $(this).closest('.div-mx-sub').remove();
+        });
+
+        $("body").on("click", ".bt-add-mx-step", function (e) {
+            alert($('.div-mx').length);
+            $('<div class="container-fluid div-mx" style="margin-top:10px">' +
+                '<div class="row col-12">' +
+                '<div><button class="btn btn-sm bt-add-mx-step text-primary"><i class="fa fa-plus" aria-hidden="true"></i></button></div>'+
+                '<div>' + ($('.div-mx').length + 1) + '</div>' +
+                '<div class="col-11"><input type="text" class="i-mx-step form-control form-control-sm"/></div>' +
+                '<div><button class="btn btn-sm bt-add-mx-no text-info"><i class="fa fa-plus" aria-hidden="true"></i></button></div>' +
+                '<div><button class="btn btn-sm bt-remove-mx-step text-danger"><i class="fa fa-times" aria-hidden="true"></i></button></div>'+
+                '</div>' +
+                '<div class="row div-mx-sub col-12" style="margin-left:35px"></div>'+
+                '</div>' +
+                '</div>'
+            ).insertAfter($('.div-mx').eq($('.div-mx').length - 1));
+        });
+        $("body").on("click", ".bt-remove-mx-step", function (e) {
+            $(this).closest('.div-mx').remove();
+            //$('.div-mx').eq($(this).closest('.div-mx').index('.div-mx')).remove();
+        });
+    });
+</script>
+
+<br />
+<div class="card">
+    <div class="card-header">Create Mixing Procedure</div>
+    <div class="card-body">
+        <div class="container-fluid">
+            <div class="row col-12">
+                <div class="col-2">Item Code :</div>&nbsp;&nbsp;
+                <div class="col-3"><input type="text" id="i_cmxpd_itemcode" class="i-cmxpd i-itemcode form-control form-control-sm" /></div>
+                <div class="col-2">Item Name :</div>
+                <div class="col-3"><input type="text" id="i_cmxpd_itemname" class="i-cmxpd i-itemname form-control form-control-sm" /></div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="container-fluid">
+            <div class="row col-12">
+                <div class="col-3">Cleanliness Control Record</div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row col-12">
+                <div class="col-1">No</div>
+                <div class="col-3">Equipment No</div>
+                <div class="col-3">Equipment Name</div>
+            </div>
+        </div>
+        <div class="container-fluid div-cc">
+            <div class="row col-12">
+                <div class="col-1">1</div>
+                <div class="col-3"><input type="text" class="i-cc-equipt-no form-control form-control-sm" /></div>
+                <div class="col-3"><input type="text" class="i-cc-equipt-name form-control form-control-sm" /></div>
+            </div>
+        </div>
+
+
+        <div class="container-fluid" style="margin-top:10px">
+            <div class="row col-12">
+                <div><button class="btn btn-add-cc btn-sm btn-primary">เพิ่ม</button></div>
+                <div style="margin-left:10px"><button class="btn btn-remove-cc btn-sm btn-danger">ลบ</button></div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div class="container-fluid">
+            <div class="row col-12">
+                <div class="col-2">Mixing Procedure</div>
+            </div>
+        </div>
+        <div class="container-fluid div-mx">
+            <div class="row col-12">
+                <div><button class="btn btn-sm bt-add-mx-step text-primary"><i class="fa fa-plus" aria-hidden="true"></i></button></div>
+                <div>1</div>
+                <div class="col-11"><input type="text" class="form-control form-control-sm" /></div>
+                <div><button class="btn btn-sm bt-add-mx-no text-info"><i class="fa fa-plus" aria-hidden="true"></i></button></div>
+                <div><button class="btn btn-sm bt-remove-mx-step text-danger"><i class="fa fa-times" aria-hidden="true"></i></button></div>
+            </div>
+
+            <div class="row div-mx-sub col-12" style="margin-left:35px"></div>
+
+            @*<div class="row col-12" style="margin-left:20px">
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">องศา</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">ความดันอากาศ</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">ความชื้น</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">เวลา</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">Weight</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">Weight of sample</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">Vacuum</label>
+                    </div>
+                </div>
+                <div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" value="option1">
+                        <label class="form-check-label" for="inlineCheckbox1">Check list</label>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+        <div class="container-fluid" style="margin-top:10px">
+            <div class="row col-12">
+                <div><button class="btn btn-add-step-mx btn-sm btn-primary">เพิ่ม Step</button></div>
+                <div style="margin-left:10px"><button class="btn btn-remove-step-mx btn-sm btn-danger">ลบ Step</button></div>
+                <div style="margin-left:10px"><button class="btn btn-add-no-mx btn-sm btn-primary">เพิ่ม No</button></div>
+                <div style="margin-left:10px"><button class="btn btn-remove-no-mx btn-sm btn-danger">ลบ No</button></div>
+            </div>
+        </div>
+        <div class="hr-line-dashed"></div>
+        <div>
+            <button class="btn btn-success" style="float:right" id="bt_save">Save</button>
+        </div>
+
+    </div>
+</div>

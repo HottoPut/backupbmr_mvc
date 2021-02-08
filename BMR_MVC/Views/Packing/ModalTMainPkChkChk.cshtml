@@ -1,0 +1,75 @@
+﻿<script>
+    $(document).ready(function () {
+        var chat = $.connection.pkSignalR;
+        $.connection.hub.start().done(function () {
+        $("body").on("click", "#mdchk_mx_check_check_bt_save", function (e) {
+            var indexClick = $('#md_mxchk_div_from_index').text();
+           
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("CheckPkCheckCheck", "Packing")',
+                data: '{"jobSysid":' + $('#md_mxchk_div_job_sysid').text() + ',"step":' + $('#md_mxchk_div_step').text() + ',"runNo":' + $('#md_mxchk_div_no').text() + ',"password":"' + $('#md_check_check_i_password').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data[0].status == 1) {
+
+                        //$('.l-pk-chk').eq(indexClick).parent().html('<span class="l-pk-chk">' + '@HttpContext.Current.Session["USERNAME"].ToString()' + '</span>');
+                        //$('.mxs-div-dt').eq(indexClick).text(data[0].dt);
+                        $('#modalTMainPkChkChk').modal('toggle');
+                        chat.server.send('PK', 'CHECK', $('#md_mxchk_div_job_sysid').text(), $('#md_mxchk_div_step').text(), $('#md_mxchk_div_no').text(), '@HttpContext.Current.Session["USERNAME"].ToString()', data[0].dt, indexClick);
+                        //if ($('.l-pk-operate').eq(parseInt(indexClick) + 1).text() != 'click' && $('.l-pk-operate').eq(parseInt(indexClick) + 1).text().length > 0) {
+                        //    $('.l-pk-chk').eq(parseInt(indexClick) + 1).parent().html('<a href="#" class="l-pk-chk">click</a>');
+                        //}
+                    }
+                    else {
+                        alert('Password ผิด');
+                    }
+             },
+             error: function (xhr, ajaxOptions, thrownError) {
+                 console.log(thrownError);
+                 }
+            });
+        });
+        $("#modalTMainMxChkChk").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+            $('.input-md').text('');
+            $('.list-input').remove();
+            });
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainPkChkChk">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Check By</h4>
+                <button type="button" id="mdachk_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="md_mxchk_div_from_index" style="display:none" class="mdchk-index-div-from input-md"></div>
+                <div id="md_mxchk_div_job_sysid" style="display:none" class="mdadt-div-job-sysid input-md"></div>
+                <div id="md_mxchk_div_step" style="display:none" class="mdadt-div-step input-md"></div>
+                <div id="md_mxchk_div_no" style="display:none" class="mdadt-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12"><input type="password" id="md_check_check_i_password" class="input-md form-control form-control-sm" placeholder="Password" /></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdchk_mx_check_check_bt_save" class="mdadt-bt-close btn btn-success">Check</button>
+                <button type="button" id="mdachk_bt_close" class="mdadt-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

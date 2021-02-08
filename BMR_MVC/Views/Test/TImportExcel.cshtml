@@ -1,0 +1,113 @@
+﻿@using BMR_MVC;
+@model ViewModel
+@{
+    ViewBag.Title = "IndexViewModel";
+}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+
+<h2>IndexViewModel</h2>
+
+<p><b>Clean Control Record</b></p>
+<table class="card">
+    <tr>
+        <th>FG_CODE</th>
+        <th>RUN_NO</th>
+        <th>EQUIPMENT_NO</th>
+        <th>EQUIPMENT_NAME</th>
+        <th>USER_BY</th>
+        <th>USER_DT</th>
+        <th>CHECK_BY</th>
+        <th>CHECK_DT</th>
+        <th>REQUIRE_YN</th>
+        <th>LOT_NO</th>
+    </tr>
+    @foreach (ExcelCleanControlRecordInfo excelClean in Model.ExcelCleanControlRecordInfoss)
+    {
+        <tr>
+            <td>@excelClean.FG_CODE</td>
+            <td>@excelClean.RUN_NO</td>
+            <td>@excelClean.EQUIPMENT_NO</td>
+            <td>@excelClean.EQUIPMENT_NAME</td>
+            <td>@excelClean.USER_BY</td>
+            <td>@excelClean.USER_DT</td>
+            <td>@excelClean.CHECK_BY</td>
+            <td>@excelClean.CHECK_DT</td>
+            <td>@excelClean.REQUIRE_YN</td>
+            <td>@excelClean.LOT_NO</td>
+        </tr>
+    }
+</table>
+
+
+<p><b>Mix Step</b></p>
+<div>
+    <table class="table table-responsive table-bordered">
+        <tr>
+            <th>FG_CODE</th>
+            <th>RUN_NO</th>
+            <th>STEP</th>
+            <th >STEP_DESC</th>
+            <th>USER_BY</th>
+            <th>CHECK_BY</th>
+            <th>CHECK_DT</th>
+            <th>REQUIRED_YN</th>
+            <th>TEMP_ENV</th>
+            <th>HUMUDITY_ENV</th>
+            <th>PRESSURE_ENV</th>
+            <th>REQ_TEMP_ENV_YN</th>
+            <th>REQ_HUMUDITY_YN</th>
+            <th>REQ_PRESS_YN</th>
+            <th>TEMP</th>
+            <th>REQ_TEMP_YN</th>
+            <th>VACC_RATE</th>
+            <th>REQ_VACC_YN</th>
+            <th>START_DT</th>
+            <th>END_DT</th>
+            <th>REQ_STAR_STOP_YN</th>
+            <th>RESULT</th>
+            <th>REQ_RESULT_YN</th>
+            <th>REQ_WEIGHT</th>
+            <th>STANDARD_W</th>
+
+        </tr>
+        @foreach (ExcelMixStepInfo excelMix in Model.ExcelMixStepInfoss)
+        {
+            <tr>
+                <td>@excelMix.FG_CODE</td>
+                <td>@excelMix.RUN_NO</td>
+                <td>@excelMix.STEP</td>
+                <td nowrap>@excelMix.STEP_DESC</td>
+                <td>@excelMix.USER_BY</td>
+                <td>@excelMix.USER_DT</td>
+                <td>@excelMix.CHECK_BY</td>
+                <td>@excelMix.CHECK_DT</td>
+                <td>@excelMix.REQUIRED_YN</td>
+                <td>@excelMix.TEMP_ENV</td>
+                <td>@excelMix.HUMUDITY_ENV</td>
+                <td>@excelMix.PRESSURE_ENV</td>
+                <td>@excelMix.REQ_TEMP_ENV_YN</td>
+                <td>@excelMix.REQ_HUMUDITY_YN</td>
+                <td>@excelMix.REQ_PRESS_YN</td>
+                <td>@excelMix.TEMP</td>
+                <td>@excelMix.REQ_TEMP_YN</td>
+                <td>@excelMix.VACC_RATE</td>
+                <td>@excelMix.REQ_VACC_YN</td>
+                <td>@excelMix.START_DT</td>
+                <td>@excelMix.END_DT</td>
+                <td>@excelMix.REQ_STAR_STOP_YN</td>
+                <td>@excelMix.RESULT</td>
+                <td>@excelMix.REQ_RESULT_YN</td>
+                <td>@excelMix.REQ_WEIGHT</td>
+                <td>@excelMix.STANDARD_W</td>
+            </tr>
+        }
+    </table>
+</div>
+
+
+

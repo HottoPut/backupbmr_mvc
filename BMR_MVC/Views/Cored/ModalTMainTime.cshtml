@@ -1,0 +1,297 @@
+﻿<script>
+    $(document).ready(function () {
+
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        var authMXCheck = '@HttpContext.Current.Session["AUTH_MIXING_CHECK"].ToString()';
+
+        //Check auth
+        checkAuthOperate();
+
+        $('.mdaddt-i-time-start').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+        $('.mdaddt-i-time-finish').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+
+        $('#modalTMainTime').on('shown.bs.modal', function (e) {
+             $.ajax({
+                type: 'POST',
+                 dataType: 'json',
+                 url: '@Url.Action("GetTime", "Cored")',
+                 data: '{"jobSysid":' + $('#mdaddt_div_job_sysid').text() + ',"step":' + $('#mdaddt_div_step').text() + ',"runNo":' + $('#mdaddt_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+
+                     var operateCheck = '';
+                     var checkCheck = '';
+                     var tempDisable = '';
+
+
+                     //First index
+                     $('.mdaddt-i-time-start').eq(0).val(data.GetTime[0].startTime);
+                     $('.mdaddt-i-time-finish').eq(0).val(data.GetTime[0].endTime);
+                     $('.mdaddt-i-rpm').eq(0).val(data.GetTime[0].rpm)
+
+                     if (data.GetTime[0].userOperate.length > 0) {
+                         $('.mdaddt-operate').eq(0).parent().html('<span class="mdaddt-operate">' + data.GetTime[0].userOperate + '</span>');
+                     }
+                     else {
+                         if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                             $('.mdaddt-operate').eq(0).parent().html('<a href="#" id="mdaddt_operate" class="mdaddt-operate">click</a>');
+                         }
+                         else {
+                             $('.mdaddt-operate').eq(0).parent().html('<span class="mdaddt-operate"></span>');
+                         }
+                     }
+
+                     if (data.GetTime[0].userCheck.length > 0) {
+                         $('.mdaddt-check').eq(0).parent().html('<span class="mdaddt-check">' + data.GetTime[0].userCheck + '</span>');
+                         $('.mdaddt-i-time-start').eq(0).attr('disabled', 'disabled');
+                         $('.mdaddt-i-time-finish').eq(0).attr('disabled', 'disabled');
+                         $('.mdaddt-i-rpm').eq(0).attr('disabled', 'disabled');
+                     }
+                     else {
+                         if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                             $('.mdaddt-check').eq(0).parent().html('<a href="#" id="mdaddt_check" class="mdaddt-check">click</a>');
+                         }
+                         else {
+                             $('.mdaddt-check').eq(0).parent().html('<span class="mdaddt-check"></span>');
+                         }
+                     }
+
+                     $('.mdaddt-time').eq(0).text(data.GetTime[0].checkDt);
+
+
+
+                     for (var i = 0; i < data.GetTime.length - 1; i++) {
+
+                         tempDisable = ''; //Reset
+
+                         if (data.GetTime[i+1].userOperate.length > 0) {
+                             operateCheck = '<span class="mdaddt-operate">' + data.GetTime[i+1].userOperate + '</span>';
+                         }
+
+                         else {
+                             if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                                 operateCheck = '<a href="#" id="mdaddt_operate" class="mdaddt-operate">click</a>';
+                             }
+                             else {
+                                 operateCheck = '<span class="mdaddt-operate"></span>';
+                             }
+                         }
+
+                         if (data.GetTime[i + 1].userCheck.length > 0) {
+                             checkCheck = '<span class="mdaddt-check">' + data.GetTime[i + 1].userCheck + '</span>';
+                             tempDisable = 'disabled="disabled"';
+                         }
+                         else {
+                             if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                                 checkCheck = '<a href="#" id="mdaddt_check" class="mdaddt-check">click</a>';
+                             }
+                             else {
+                                 checkCheck = '<span class="mdaddt-check"></span>';
+                             }
+                         }
+
+                         $('<div class="container-fluid mdadt-div-time list-input" style = "margin-top:10px">' +
+                             '<div class="row">' +
+                             '<div class="col-2"><input type="text" id="mdadt_i_time_start" ' +tempDisable+' value="' + data.GetTime[i + 1].startTime +'" class="mdaddt-i-time-start i-operate input-md form-control form-control-sm" /></div>' +
+                             '<div class="col-2"><input type="text" id="mdadt_i_time_finish" ' + tempDisable + ' value="' + data.GetTime[i + 1].endTime + '" class="mdaddt-i-time-finish i-operate input-md form-control form-control-sm" /></div>' +
+                             '<div class="col-2">' + operateCheck+'</div>' +
+                             '<div class="col-2">' + checkCheck+'</div>' +
+                             '<div class="col-2 mdaddt-time">' + data.GetTime[i+1].checkDt +'</div>' +
+                             '</div>' +
+                             '<div>').insertAfter($('.mdadt-div-time').eq(i));
+                     }
+
+                     $('.mdaddt-i-time-start').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+                     $('.mdaddt-i-time-finish').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+
+                     //Check auth
+                     checkAuthOperate();
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+
+        $("body").on("click", "#mdadt_bt_add_time", function (e) {
+            var modalOperate = '';
+            var modalCheck = '';
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                modalOperate = '<a href="#" id="mdaddt_operate" class="mdaddt-operate">click</a>';
+            }
+            else {
+                modalOperate = '<span class="mdaddt-operate"></span>';
+            }
+            if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                modalCheck = '<a href="#" id="mdaddt_check" class="mdaddt-check">click</a>';
+            }
+            else {
+                modalCheck = '<span class="mdaddt-check"></span>';
+            }
+
+            $('<div class="container-fluid mdadt-div-time list-input" style = "margin-top:10px">' +
+                '<div class="row">' +
+                '<div class="col-2"><input type="text" id="mdadt_i_time_start" class="mdaddt-i-time-start i-operate input-md form-control form-control-sm" /></div>' +
+                '<div class="col-2"><input type="text" id="mdadt_i_time_finish" class="mdaddt-i-time-finish i-operate input-md form-control form-control-sm" /></div>' +
+                '<div class="col-2">'+modalOperate+'</div>' +
+                '<div class="col-2">'+modalCheck+'</div>' +
+                '<div class="col-2 mdaddt-time"></div>' +
+                '</div>' +
+                '</div>').insertAfter($('.mdadt-div-time').eq($('.mdadt-div-time').length - 1));
+
+            //Date time picker
+            $('.mdaddt-i-time-start').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+            $('.mdaddt-i-time-finish').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+
+        });
+
+        $("body").on("click", "#mdadt_bt_remove_time", function (e) {
+            if ($('.mdadt-div-time').length > 1) {
+                $('.mdadt-div-time').eq($('.mdadt-div-time').length - 1).remove();
+            }
+        });
+        $("body").on("click", "#mdaddt_bt_save", function (e) {
+            jTimeObj = [];
+            for (var i = 0; i < $('.mdadt-div-time').length; i++) {
+                jTime = {};
+                jTime["listNo"] = (i+1);
+                jTime["startTime"] = $('.mdaddt-i-time-start').eq(i).val();
+                jTime["endTime"] = $('.mdaddt-i-time-finish').eq(i).val();
+                jTime["statusOperate"] = $('.mdaddt-operate').eq(i).text() == 'click' ? 0 : 1
+                jTimeObj.push(jTime);
+            }
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                url: '@Url.Action("SaveTime", "Cored")',
+
+                data: '{"jobSysid":' + $('#mdaddt_div_job_sysid').text() + ',"step":' + $('#mdaddt_div_step').text() + ',"runNo":' + $('#mdaddt_div_no').text() + ',"listModalTimeInfos":' + JSON.stringify(jTimeObj) + ',"lengthTime":' + $('.mdadt-div-time').length+'}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#modalTMainTime').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+       });
+        $("body").on("click", ".mdaddt-operate", function (e) {
+            e.preventDefault();
+            $('#md_mxt_operate_div_job_sysid').text($('#mdaddt_div_job_sysid').text());
+            $('#md_mxt_operate_div_step').text($('#mdaddt_div_step').text());
+            $('#md_mxt_operate_div_no').text($('#mdaddt_div_no').text());
+            $('#md_mxt_operate_list_chk').text($('.mdaddt-operate').index(this)+1);
+            $('#modalTMainTimeOperate').modal('show');
+        });
+        $("body").on("click", ".mdaddt-check", function (e) {
+            e.preventDefault();
+            $('#md_mxt_check_div_job_sysid').text($('#mdaddt_div_job_sysid').text());
+            $('#md_mxt_check_div_step').text($('#mdaddt_div_step').text());
+            $('#md_mxt_check_div_no').text($('#mdaddt_div_no').text());
+            $('#md_mxt_check_list_chk').text($('.mdaddt-check').index(this) + 1);
+            $('#modalTMainTimeCheck').modal('show');
+        });
+        $("#modalTMainTime").on("hidden.bs.modal", function (e) {
+
+            var modalOperate = '';
+            var modalCheck = '';
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                modalOperate = '<a href="#" id="mdaddt_operate" class="mdaddt-operate">click</a>';
+            }
+            else {
+                modalOperate = '<span class="mdaddt-operate"></span>';
+            }
+            if (JSON.parse(authMXCheck.toLowerCase()) == true) {
+                modalCheck = '<a href="#" id="mdaddt_check" class="mdaddt-check">click</a>';
+            }
+            else {
+                modalCheck = '<span class="mdaddt-check"></span>';
+            }
+
+            if (JSON.parse(authMXOperate.toLowerCase()) == true) {
+                $(".i-operate").removeAttr('disabled');
+            }
+            $('.mdaddt-operate').parent().html(modalOperate);
+            $('.mdaddt-check').parent().html(modalCheck);
+            $('.input-md').text('');
+            $('.input-md').val('');
+            $('.list-input').remove();
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainTime">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">เวลา</h4>
+                <button type="button" id="mdadt_bt_close" class="mdadh-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdaddt_div_job_sysid" style="display:none" class="mdaddt-div-job-sysid input-md"></div>
+                <div id="mdaddt_div_step" style="display:none" class="mdaddt-div-step input-md"></div>
+                <div id="mdaddt_div_no" style="display:none" class="mdaddt-div-no input-md"></div>
+                <!--Parameter-->
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-2">เริ่มเวลา/Start Time</div>
+                        <div class="col-2">เสร็จเวลา/Finish Time</div>
+                        <div class="col-2">Operate by</div>
+                        <div class="col-2">Check by</div>
+                        <div class="col-2">Date</div>
+                    </div>
+                </div>
+
+                <div class="container-fluid mdadt-div-time">
+                    <div class="row">
+                        <div class="col-2"><input type="text" id="mdaddt_i_time_start" class="mdaddt-i-time-start i-operate input-md form-control form-control-sm" /></div>
+                        <div class="col-2"><input type="text" id="mdaddt_i_time_finish" class="mdaddt-i-time-finish i-operate input-md form-control form-control-sm" /></div>
+                        @if (HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString() == "True")
+                        {
+                            <div class="col-2"><a href="#" id="mdaddt_operate" class="mdaddt-operate">click</a></div>
+                        }
+                        else
+                        {
+                            <div class="col-2"><span class="mdaddt-operate"></span></div>
+                        }
+                        @if (HttpContext.Current.Session["AUTH_MIXING_CHECK"].ToString() == "True")
+                        {
+                            <div class="col-2"><a href="#" id="mdaddt_check" class="mdaddt-check">click</a></div>
+                        }
+                        else
+                        {
+                            <div class="col-2"><span class="mdaddt-check"></span></div>
+                        }
+                        <div class="col-2 mdaddt-time input-md"></div>
+                    </div>
+                </div>
+                <div class="container-fluid" style="margin-top:10px">
+                    <div class="row col-12">
+                        <div><button type="button" id="mdadt_bt_add_time" class="btn bt-operate bt-md btn-md btn-primary">เพิ่ม</button> </div>
+                        <div style="margin-left:10px"><button type="button" id="mdadt_bt_remove_time" class="btn bt-operate bt-md btn-md btn-danger">ลบ</button> </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdaddt_bt_save" class="mdadp-bt-close bt-operate btn btn-success">Save</button>
+                <button type="button" class="mdadh-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+

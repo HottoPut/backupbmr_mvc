@@ -1,0 +1,123 @@
+﻿<script>
+    $(document).ready(function () {
+        function format(d) {
+            var subStepDesc = d.subStepDesc.split('|');
+            var groupOpName = d.groupOpName.split('|');
+            var groupCheckName = d.groupCheckName.split('|');
+            var numRunNo = d.numRunNo.split('|');
+            var reqImageYn = d.reqImageYn.split('|');
+            var reqHumidityYn = d.reqHumidityYn.split('|');
+            var reqPressYn = d.reqPressYn.split('|');
+            var reqTempYn = d.reqTempYn.split('|');
+            var reqVaccYn = d.reqVaccYn.split('|');
+            var reqStartStopYn = d.reqStartStopYn.split('|');
+            var reqWeightYn = d.reqWeightYn.split('|');
+            var reqAmountSampleYn = d.reqAmountSampleYn.split('|');
+            var divSubStepDesc = '';
+
+            for (i = 0; i < subStepDesc.length; i++) {
+                divSubStepDesc += '<div class="row">' +
+                    '<div style="width:4%">' + numRunNo[i] + '</div>' +
+                    '<div class="col-4"><a href="#" data-toggle="popover" data-html="true" style="color:black" data-content="' +
+                    '<B><U>Image</U></B> : ' + reqImageYn[i] + '<br/>' +
+                    '<B><U>Humidity</U></B> : ' + reqHumidityYn[i] + '<br/>' +
+                    '<B><U>Pressure</U></B> : ' + reqPressYn[i] + '<br/>' +
+                    '<B><U>Temp</U></B> : ' + reqTempYn[i] + '<br/>' +
+                    '<B><U>Vacuum</U></B> : ' + reqVaccYn[i] + '<br/>' +
+                    '<B><U>Start Stop</U></B> : ' + reqStartStopYn[i] + '<br/>' +
+                    '<B><U>Weight</U></B> : ' + reqWeightYn[i] + '<br/>' +
+                    '<B><U>Amount Sample</U></B> : ' + reqAmountSampleYn[i] + '<br/>' +
+                    '">' + subStepDesc[i] + '</a></div>' +
+                    '<div class="col-2">' + groupOpName[i] + '</div>' +
+                    '<div class="col-2">' + groupCheckName[i] + '</div>' +
+                    //'<div class="col-3">' +
+                    //'<div><span><b>Image : </b></span><span style="color:' + (reqImageYn[i] == 'Y' ? 'green' : 'red') + '">' + reqImageYn[i] + '</span></div>' +
+                    //'<div><span><b>Humidity : </b></span><span style="color:' + (reqHumidityYn[i] == 'Y' ? 'green' : 'red') + '">' + reqHumidityYn[i] + '</span></div>' +
+                    //'<div><span><b>Pressure : </b></span><span style="color:' + (reqPressYn[i] == 'Y' ? 'green' : 'red') + '">' + reqPressYn[i] + '</span></div>' +
+                    //'<div><span><b>Temp : </b></span><span style="color:' + (reqTempYn[i] == 'Y' ? 'green' : 'red') + '">' + reqTempYn[i] + '</span></div>' +
+                    //'<div><span><b>Vacuum : </b></span><span style="color:' + (reqVaccYn[i] == 'Y' ? 'green' : 'red') + '">' + reqVaccYn[i] + '</span></div>' +
+                    //'<div><span><b>Start Stop : </b></span><span style="color:' + (reqStartStopYn[i] == 'Y' ? 'green' : 'red') + '">' + reqStartStopYn[i] + '</span></div>' +
+                    //'<div><span><b>Weight Stop : </b></span><span style="color:' + (reqWeightYn[i] == 'Y' ? 'green' : 'red') + '">' + reqWeightYn[i] + '</span></div>' +
+                    //'<div><span><b>Amount Sample : </b></span><span style="color:' + (reqAmountSampleYn[i] == 'Y' ? 'green' : 'red') + '">' + reqAmountSampleYn[i] + '</span></div>' +
+                    //'</div>' +
+                    '</div>' +
+                    '<div class="hr-line-dashed"></div>';
+            }
+
+            return '<div class="container-fluid">' +
+                '<div class="row" > ' +
+                '<div style="width:4%;white-space: nowrap"></div>' +
+                '<div class="col-4"><b>Step Desc</b></div>' +
+                '<div class="col-2"><b>Group Operate</b></div>' +
+                '<div class="col-2"><b>Group Check</b></div>' +
+                '<div class="col-3"></div>' +
+                '</div>' +
+                divSubStepDesc +
+                '</div>';
+        }
+        var tableBCA = $('#TBca').DataTable({
+            dom: 't',
+            paging: false,
+            buttons: [
+                {
+                    className: 'btn btn-primary btn-sm',
+                    text: 'Create',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "ImportExcel"))';
+                    }
+                }, {
+                    className: 'btn btn-success btn-sm',
+                    text: 'Run Job',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "RunJob"))';
+                    }
+                }
+            ],
+            "ajax": {
+                "url": '@Url.Action("GetBca", "RunJob")',
+                "type": "POST",
+                "data": {
+                    "itemCode": $('#sp_item_code').text(),
+                    "revision": $('#sp_version').text()
+
+                }
+            },
+            "columns": [
+                {
+                    "className": 'details-control',
+                    "orderable": false,
+                    "data": null,
+                    "defaultContent": ''
+                },
+                { "data": "numStep" },
+                { "data":"stepDesc"}
+            ],
+            //"order": [[1, 'asc']]
+        });
+        $('#TBca tbody').on('click', 'td.details-control', function (e) {
+            var tr = $(this).closest('tr');
+            var row = tableBCA.row(tr);
+            if (row.child.isShown()) {
+                // This row is already open - close it
+                row.child.hide();
+                tr.removeClass('shown');
+            }
+            else {
+                // Open this row
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+                $('[data-toggle="popover"]').popover({ trigger: 'hover', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+                //$('[data-toggle="popover"]').popover({ trigger: 'focus', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+            }
+        });
+    });
+</script>
+<table id="TBca" class="display t-datatable" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+            <th style="white-space: nowrap;">Step No</th>
+            <th style="white-space: nowrap;">Step Desc</th>
+        </tr>
+    </thead>
+</table>

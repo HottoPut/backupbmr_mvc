@@ -1,0 +1,74 @@
+﻿<script>
+    $(document).ready(function () {
+        var chat = $.connection.bcaSignalR;
+        $.connection.hub.start().done(function () {
+        $("body").on("click", "#mdchk_cl_check_bt_save", function (e) {
+            var indexClick = $('#md_mxcl_chk_chk').text();
+           
+            //alert(indexClick);
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("CheckBcaCCCheckCheck", "Coated")',
+                data: '{"jobSysid":' + $('#md_mxcl_chk_div_job_sysid').text() + ',"runNo":' + $('#md_mxcl_chk_div_no').text() + ',"password":"' + $('#md_mxcl_chk_cl_check_i_password').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+
+                    if (data[0].status == 1) {
+                        $('#modalTMainClChkChk').modal('toggle');
+                        chat.server.send('BCA_CC', 'CHECK', $('#md_mxcl_chk_div_job_sysid').text(), 0, $('#md_mxcl_chk_div_no').text(), '@HttpContext.Current.Session["USERNAME"].ToString()', data[0].dt, indexClick);
+                        //if ($('.l-cc-clean').eq(parseInt(indexClick) + 1).text() != 'click' && $('.l-cc-clean').eq(parseInt(indexClick) + 1).text().length > 0) {
+                        //    $('.l-cc-chk').eq(parseInt(indexClick) + 1).parent().html('<a href="#" id="l_cc_chk" class="l-cc-chk">click</a>');
+                        //}
+                    }
+                    else {
+                        //alert(indexClick);
+                        alert('Password ผิด');
+                    }
+             },
+             error: function (xhr, ajaxOptions, thrownError) {
+                 console.log(thrownError);
+             }
+            });
+        });
+        $("#modalTMainClChkChk").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+            $('.input-md').text('');
+            $('.list-input').remove();
+            });
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainClChkChk">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Check By</h4>
+                <button type="button" id="mdachk_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="md_mxcl_chk_chk" style="display:none" class="mdchk-index-div-from input-md"></div>
+                <div id="md_mxcl_chk_div_job_sysid" style="display:none" class="mdadt-div-job-sysid input-md"></div>
+                <div id="md_mxcl_chk_div_no" style="display:none" class="mdadt-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12"><input type="password" id="md_mxcl_chk_cl_check_i_password" class="input-md form-control form-control-sm" placeholder="Password" /></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdchk_cl_check_bt_save" class="mdadt-bt-close btn btn-success">Check</button>
+                <button type="button" id="mdachk_bt_close" class="mdadt-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

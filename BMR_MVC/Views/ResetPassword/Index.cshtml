@@ -1,0 +1,96 @@
+﻿@using BMR_MVC;
+@{
+    Layout = null;
+}
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!DOCTYPE html>
+
+<html>
+<head>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#bt_reset").click(function () {
+                if (($("#ip_username").val().length > 0) && ($("#ip_new_password_reset").val().length == 0) && ($("#ip_old_password_reset").val().length == 0)) {
+                    $(".error_pass").show();
+                    $(".error_odl_pass_null").show();
+                }
+                if (($("#ip_username").val().length == 0) && ($("#ip_new_password_reset").val().length > 0) && ($("#ip_old_password_reset").val().length > 0)) {
+                    $(".error_user").show();
+                }
+                if (($("#ip_username").val().length == 0) && ($("#ip_new_password_reset").val().length == 0) && ($("#ip_old_password_reset").val().length == 0)) {
+                    $(".error_all").show();
+                }
+                if (($("#ip_old_password_reset").val().length > 0) && ($("#ip_username").val().length == 0) && ($("#ip_new_password_reset").val().length == 0))
+                {
+                    $(".error_pass").show();
+                    $(".error_user").show();
+                }
+                if (($("#ip_username").val().length > 0) && ($("#ip_new_password_reset").val().length > 0)  && ($("#ip_old_password_reset").val().length > 0)) {
+                    CheckResetpassAjax();
+
+                    }
+                //CheckResetpassAjax();
+            });
+            function CheckResetpassAjax() {
+                  $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '@Url.Action("CheckUsername", "ResetPassword")',
+                      data: '{"username":"' + $("#ip_username").val() + '","new_password":"' + $("#ip_new_password_reset").val() + '","old_password":"' + $("#ip_old_password_reset").val() + '"}',
+                    contentType: "application/json; charset=utf-8",
+                      success: function (response) {
+                          if (response.length > 0) {
+                              //alert(JSON.stringify(response));
+                              alert('แก้ไขรหัสผ่านเรียบร้อย');
+                            window.location.href = '@Html.Raw(Url.Action("Index", "Login"))';
+                        }
+                        else {
+                             $(".error_all_wrong").show();
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $(".error").show();
+                        $(".error_odl_pass").show();
+                    }
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="col-12">
+        <div class="jumbotron">
+            <h1>Change your password?</h1>
+            <p>Don't have an account? Contact IT and If you forgot password ? Contact IT</p>
+        </div>
+    </div>
+    <div class="container col-4">
+        <div class="card-body">
+            <div class="form-group align-content-center">
+                <label for="ip_username">Username:</label>
+                <input type="text" class="form-control" id="ip_username" placeholder="Enter username" name="uname" required>
+                <div class="error_user" style="font-size:medium;color:red;display:none">Username is null.</div>
+            </div>
+            <div class="form-group align-content-center">
+                <label for="ip_password ">Old Password:</label>
+                <input type="password" class="form-control " id="ip_old_password_reset" placeholder="Enter old password" required>
+                <div class="error_odl_pass_null" style="font-size:medium;color:red;display:none">Password is null.</div>
+                <div class="error_odl_pass" style="font-size:medium;color:red;display:none">Incorrect Password</div>
+            </div>
+            <div class="form-group align-content-center">
+                <label for="ip_password ">New Password:</label>
+                <input type="password" class="form-control " id="ip_new_password_reset" placeholder="Enter new password" name="pswd" required>
+                <div class="error_pass" style="font-size:medium;color:red;display:none">Password is null.</div>
+            </div>
+            <div class="container">
+                <button type="submit" class="btn btn-lg btn-warning btn-block" id="bt_reset">Change Password</button>
+                <div class="error" style="font-size:medium;color:red;display:none">Username is wrong.</div>
+                <div class="error_all" style="font-size:medium;color:red;display:none">Username and Password is null.</div>
+                <div class="error_all_wrong" style="font-size:medium;color:red;display:none">Username or Old Password is wrong.</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

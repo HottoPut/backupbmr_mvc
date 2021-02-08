@@ -1,0 +1,96 @@
+﻿@using BMR_MVC;
+@{
+    Layout = null;
+}
+
+@*<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>*@
+<script src="~/Scripts/jquery-3.5.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+<link href="~/Content/bootstrap.min.css"  rel="stylesheet"/>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BMR</title>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#bt_login").click(function () {
+                CheckLoginAjax();
+            });
+            $("input").keypress(function (e) {
+                if (e.which == 13) {
+                    if (($("#ip_username").val().length > 0) && ($("#ip_password").val().length == 0)) {
+                        $("#error_password").show();
+                    }
+                    if (($("#ip_username").val().length == 0) && ($("#ip_password").val().length > 0)) {
+                        $("#error_username").show();
+                    }
+                    if (($("#ip_username").val().length > 0) && ($("#ip_password").val().length > 0)) {
+                        CheckLoginAjax();
+                    }
+                }
+            });
+            function CheckLoginAjax() {
+                  $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '@Url.Action("CheckLogin", "Login")',
+                      data: '{"username":"' + $("#ip_username").val() + '","password":"' + $("#ip_password").val()+ '"}',
+                    contentType: "application/json; charset=utf-8",
+                      success: function (response) {
+                        if (response.length>0) {
+                            window.location.href = '@Html.Raw(Url.Action("Index", "Default"))';
+                        }
+                        else {
+                            $(".error").show();
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        $(".error").show();
+                    }
+                });
+            }
+        });
+    </script>
+    <title>Index</title>
+</head>
+<body>
+    <div class="col-12">
+        <div class="jumbotron">
+            <h1>BMR Electronic</h1>
+        </div>
+
+    </div>
+
+    <div class="card container " style="width:500px">
+
+        <div class="card-body">
+            <div class="container">
+                <div class="form-group align-content-center">
+                    <label for="ip_username">Username:</label>
+                    <input type="text" class="form-control" id="ip_username" placeholder="Enter username" name="uname" required>
+                    <div class="error_username" style="font-size:medium;color:red;display:none">Username is null.</div>
+                </div>
+                <div class="form-group align-content-center">
+                    <label for="ip_password ">Password:</label>
+                    <input type="password" class="form-control" id="ip_password" placeholder="Enter password" name="pswd" required>
+                    <div class="error_password" style="font-size:medium;color:red;display:none">Password is null.</div>
+                </div>
+                <div class="container">
+                    <button type="submit" class="btn btn-lg btn-primary btn-block" id="bt_login">Sign in</button>
+                    <div class="error" style="font-size:medium;color:red;display:none">Username/Password is wrong.</div>
+                </div>
+          
+                    <div class="align-content-center">
+                        <a href="@Url.Action("Index","ResetPassword")">Change Password?</a>
+                    </div>
+
+            </div>
+        </div>
+    </div>
+
+
+</body>
+</html>

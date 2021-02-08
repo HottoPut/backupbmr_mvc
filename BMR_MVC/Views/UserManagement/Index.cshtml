@@ -1,0 +1,963 @@
+﻿@model List<BMR_MVC.Models.UserManagementInfo>
+
+@{
+    /**/
+
+
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@*<script src="~/Scripts/default/create.js"></script>*@
+<script src="~/Scripts/moment.min.js"></script>
+<script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+<link href="~/Scripts/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<!DOCTYPE html>
+
+<html>
+<head>
+
+    <script type="text/javascript">
+        var editor;
+        $(document).ready(function () {
+            $('.mdedt-i-dateMNT').datetimepicker(
+                {
+                    format: 'YYYY/MM/DD'
+                    //format: 'DD-MM-YYYY'
+                }
+            );
+        });
+        $(document).ready(function () {
+            $('#user_tabel').DataTable({
+                "columnDefs": [
+                    { "width": "370", "targets": 7 }
+                ],
+                dom: '<"d-flex"<"p-2"l><"ml-auto p-2"f><"p-2"B>>rt<"d-flex"<"p-2"i><"ml-auto p-2"p>>',
+                lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                buttons: [
+                {
+                    className: 'btn btn-success btn-sm',
+                    text: 'Add User',
+                        attr: {
+                            id: 'bt_add'
+                        }
+                    //action: function (e, dt, node, config) {
+                    //    alert('add group click');
+                    //}
+                },{
+                    className: 'btn btn-primary btn-sm',
+                    text: 'Create Group',
+                        attr: {
+                            id: 'bt_create_group'
+                        }
+                    //action: function (e, dt, node, config) {
+                    //    alert('add group click');
+                    //}
+                }, {
+                        className: 'btn btn-warning btn-sm',
+                    text: 'Edit Group',
+                    attr: {
+                       id: 'bt_edit_group'
+                    }
+                }
+            ]
+            });
+        });
+        //<button type="button" class="btn btn-success" data-toggle="modal" data-target="#addEmployeeModal" id="bt_add">Add User</button>
+        $(document).ready(function () {
+            $("#bt_create_group").on("click", function () {
+                $("#Modaladdgroup").modal();
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_add").on("click", function () {
+                document.getElementById("select_add_group").innerHTML = null;
+                $("#addEmployeeModal").modal();
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_edit_group").on("click", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("Getgroup", "UserManagement")',
+                    data: '{"GroupID":"'+ $("#ip_invis").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        document.getElementById("select_group_edit").innerHTML = null;
+                        $('#md_ip_group_edit_name').val('');
+                        $('#md_ip_group_edit_desc').val('');
+                       var $select = $('#select_group_edit');
+                       $.each(response, function (i, state) {
+                           $('<option>', {
+                               value: state.gui_group_id
+                           }).html(state.gui_group_name).appendTo($select);
+                       });
+                       $("#Modaleditgroup").modal();
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#select_group_edit").on("change", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("Getgroupdetial", "UserManagement")',
+                    data: '{"GroupID":"' + $("#select_group_edit").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (response) {
+                        $('.group-name').val(response[0].gdi_group_name);
+                        $('.group-desc').val(response[0].gdi_group_desc);
+                        //$('.select-createp-bmr').val(response[0].gdi_gdi_group_create);
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_add").on("click", function () {
+               $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("Getgroup", "UserManagement")',
+                    data: '{"GroupID":"'+ $("#ip_invis").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       JSON.stringify(response)
+                       var $select = $('#select_add_group');
+                       $.each(response, function (i, state) {
+                           $('<option>', {
+                               value: state.gui_group_id
+                           }).html(state.gui_group_name).appendTo($select);
+                       });
+                       //$('#select_add_group').html('');
+                       //var options = '';
+                       //options += '<option value="Select">Select</option>';
+                       //for (var i = 0; i < response.length; i++) {
+                       //    options += '<option value="' + response[i].text + '">' + response[i].text + '</option>';
+                       //}
+                       //$('#select_add_group').append(options);
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("body").on("click","#bt_edit" ,function () {
+               $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("Getgroup", "UserManagement")',
+                    data: '{"GroupID":"'+ $("#ip_invis").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       JSON.stringify(response)
+                       document.getElementById("select_edit_group").innerHTML = null;
+                       var $select = $('#select_edit_group');
+                       $.each(response, function (i, state) {
+                           $('<option>', {
+                               value: state.gui_group_id
+                           }).html(state.gui_group_name).appendTo($select);
+                       });
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_add_save").on("click", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("InsertUser", "UserManagement")',
+                    data: '{"userLogin":"' + $("#et_add_user_login").val() + '","userPass":"' + $("#et_add_password").val() + '","userName":"' + $("#et_add_user_name").val() + '","userPre":"' + $("#et_add_user_pre").val() + '","startDT":"' + $("#et_add_start_dt").val() + '","endDT":"' + $("#et_add_end_dt").val() + '","Group_ID":"' + $("#select_add_group").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       alert('บันทึกข้อมูล เรียบร้อย');
+                       $('#user_tabel').DataTable().ajax.reload(null, false);
+                       //$('#user_tabel').DataTable().ajax.reload();
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_edit_save").on("click", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("UpdateUser", "UserManagement")',
+                    data: '{"userLogin":"' + $("#md_ip_user_login").val() + '","userName":"' + $("#me_ip_username").val() + '","userPre":"' + $("#me_ip_pre").val() + '","startDT":"' + $("#me_ip_start_dt").val() + '","endDT":"' + $("#me_ip_end_dt").val() + '","user_ctrl_id":"' + $("#md_ip_ctrl_sys_id").val() + '","user_link_id":"' + $("#md_ip_link_sys_id").val() + '","Group_ID":"' + $("#select_edit_group").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('แก้ไขข้อมูล เรียบร้อย');
+                       $('#user_tabel').DataTable().ajax.reload(null, false);
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_del_save").on("click", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("DellUser", "UserManagement")',
+                    data: '{"userLogin":"' + $("#md_del_ip_user_login").val() + '","ctrl_user_sys_id":"' + $("#md_ip_del_ctrl_sys_id").val() + '","link_user_sys_id":"' + $("#md_ip_del_link_sys_id").val() + '","userName":"' + $("#me_del_ip_username").val() + '","Group_ID":"' + $("#me_del_ip_group").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('ลบข้อมูล เรียบร้อย');
+                       $('#et_add_user_login').val('');
+                       $('#et_add_password').val('');
+                       $('#et_add_user_name').val('');
+                       $('#et_add_user_pre').val('');
+                       $('#et_add_start_dt').val('');
+                       $('#et_add_end_dt').val('');
+                       $('#md_ip_del_ctrl_sys_id').val('');
+                       $('#md_ip_del_link_sys_id').val('');
+                       $('#user_tabel').DataTable().ajax.reload(null, false);
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_delete").on("click", function () {
+                $('#deleteEmployeeModal').on('show.bs.modal', function (event) {
+                    var button = $(event.relatedTarget) // Button that triggered the modal
+                    var userlogin = button.data('del-login') // Extract info from data-* attributes
+                    var username = button.data('del-username')
+                    var group = button.data('del-groupid')
+                    var ctrl_sys_id = button.data('de-salesperson')
+                    var link_sys_id = button.data('de-support')
+                    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+                    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+                    var modal = $(this)
+                    modal.find('.modal-logo').val(userlogin)
+                    modal.find('.modal-industry').val(username)
+                    modal.find('.modal-salesCycle').val(group)
+                    modal.find('.modal-del-ctrlsysid').val(ctrl_sys_id)
+                    modal.find('.modal-linksysid').val(link_sys_id)
+                });
+            });
+        });
+        $(document).ready(function () {
+            $("#bt_add_cancel").on("click", function () {
+                document.getElementById("select_edit_group").innerHTML = null;
+            });
+        });
+        //$(document).ready(function () {
+        //    $("#bt_edit_close").on("click", function () {
+        //        var table = $('#user_tabel').DataTable({
+        //            ajax: "data.json"
+        //        });
+        //        table.ajax.reload(null, false);
+        //    });
+        //});
+        $(document).ready(function () {
+            $("#bt_add_group_save").on("click", function () {
+                 $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("InsertGroup", "UserManagement")',
+                     data: '{"group_name":"' + $("#md_ip_group_name").val() + '","group_desc":"' + $("#md_ip_group_desc").val() + '","group_create":"' + $("#select_add_group_create_bmr").val() + '","group_run_job":"' + $("#select_add_group_run_job").val() + '","group_mix_cc_clean":"' + $("#select_add_group_check_clean").val() + '","group_mix_cc_check":"' + $("#select_add_group_check_clean_comp").val() + '","group_mix_operate":"' + $("#select_add_group_operate").val() + '","group_mix_check":"' + $("#select_add_group_check_mixing_comp").val() + '","group_active":"' + $("#select_add_group_active").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('บันทึกข้อมูลกลุ่ม เรียบร้อย');
+                       $('#Modaladdgroup').modal('toggle');
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $('#exampleModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget) // Button that triggered the modal
+                var userlogin = button.data('ed-login') // Extract info from data-* attributes
+                var username = button.data('username')
+                var userpre = button.data('userpree')
+                var group = button.data('group')
+                var startdt = button.data('startdt')
+                var enddt = button.data('enddt')
+                var ctrl_sys_id = button.data('salesperson')
+                var link_sys_id = button.data('background')
+                // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+                // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+                var modal = $(this)
+                //edctrlsysid
+                modal.find('.modal-body input').val(userlogin)
+                modal.find('.modal-username').val(username)
+                modal.find('.modal-preeee').val(userpre)
+                modal.find('.modal-group').val(group)
+                modal.find('.modal-startdt').val(startdt)
+                modal.find('.modal-enddt').val(enddt)
+                modal.find('.modal-metrics').val(ctrl_sys_id)
+                modal.find('.modal-headshot').val(link_sys_id)
+            });
+        });
+        $(document).ready(function () {
+            $('#bt_edit_group_save').on("click", function () {
+                $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("UpdateGroup", "UserManagement")',
+                    data: '{"group_name":"' + $("#md_ip_group_edit_name").val() + '","group_desc":"' + $("#md_ip_group_edit_desc").val() + '","group_create":"' + $("#select_edit_group_create_bmr").val() + '","group_run_job":"' + $("#select_edit_group_run_job").val() + '","group_mix_cc_clean":"' + $("#select_edit_group_check_clean").val() + '","group_mix_cc_check":"' + $("#select_edit_group_check_clean_comp").val() + '","group_mix_operate":"' + $("#select_edit_group_operate").val() + '","group_mix_check":"' + $("#select_edit_group_check_mixing_comp").val() + '","group_id":"' + $("#select_group_edit").val() + '","group_active":"' + $("#select_edit_group_active").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('แก้ไขข้อมูลกลุ่ม เรียบร้อย');
+                       $('#Modaleditgroup').modal('toggle');
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+        $(document).ready(function () {
+            $('#bt_edit_group_delete').on("click", function () {
+                 $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("Delgroup", "UserManagement")',
+                     data: '{"group_id":"' + $("#select_group_edit").val()+'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('ลบข้อมูลกลุ่ม เรียบร้อย');
+                       $('#Modaleditgroup').modal('toggle');
+                       $('#deleteGroupModal').modal('toggle');
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+            });
+        });
+         $(document).ready(function () {
+             $('#bt_reset_pass_save').on("click", function () {
+                 if (($("#rep_new_pass").val().length == 0)) {
+                     $(".error_pass").show();
+                 }
+                 if (($("#rep_new_pass").val().length > 0)) {
+                     CheckResetpassAjax();
+                 }
+                 function CheckResetpassAjax()
+                 {
+                  $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("ResetPassword", "UserManagement")',
+                    data: '{"password":"' + $("#rep_new_pass").val() + '","ctrl_sys_id":"' + $("#rep_ctrl_id").val() +'"}',
+                    contentType: "application/json; charset=utf-8",
+                   success: function (response) {
+                       //JSON.stringify(response);
+                       alert('เปลี่ยนรหัสผ่าน เรียบร้อย');
+                       $('#RsetPassModel').modal('toggle');
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+                  });
+                 }
+
+            });
+        });
+        $(document).ready(function () {
+            $('#bt_add_cancel').on("click", function () {
+                $('#et_add_user_login').val('');
+                $('#et_add_password').val('');
+                $('#et_add_user_name').val('');
+                $('#et_add_user_pre').val('');
+                $('#et_add_start_dt').val('');
+                $('#et_add_end_dt').val('');
+                $('#md_ip_ctrl_sys_id').val('');
+                $('#md_ip_link_sys_id').val('');
+            });
+        });
+        $(document).ready(function () {
+            $('#DetailModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget) // Button that triggered the modal
+                var user_ctrl_id = button.data('group-ctrl_id') // Extract info from data-* attributes
+                var user_link_id = button.data('group-link-id')
+                var user_name = button.data('group-username')
+                var create = button.data('group-create')
+                var run_job = button.data('group-run-job')
+                var mix_cc_clean = button.data('group-mix-cc-clean')
+                var mix_cc_check = button.data('group-mix-cc-check')
+                var mix_operate = button.data('group-operate')
+                var mix_check = button.data('group-mix-check')
+                // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+                // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+                var modal = $(this)
+                //edctrlsysid
+                //modal.find('.modal-body input').val(user_ctrl_id)
+                //modal.find('.modal-username').val(user_link_id)
+                modal.find('.model-dt-user-name').val(user_name)
+                modal.find('.model-dt-group-create').val(create)
+                modal.find('.modal-dt-group-run-job').val(run_job)
+                modal.find('.modal-dt-group-mix-clean').val(mix_cc_clean)
+                modal.find('.modal-dt-group-mix-clean-check').val(mix_cc_check)
+                modal.find('.modal-group-mix-operate').val(mix_operate)
+                modal.find('.modal-group-mix-check').val(mix_check)
+            });
+        });
+        $(document).ready(function () {
+            $('#RsetPassModel').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget) // Button that triggered the modal
+                var user_ctrl_id = button.data('re-pass-ctrl-id') // Extract info from data-* attributes
+
+                var modal = $(this)
+                modal.find('.model-reset-ctl-id').val(user_ctrl_id)
+
+
+
+            });
+        });
+
+    </script>
+</head>
+<body>
+    <div class="card">
+        <div class="card-header">User Management</div>
+        <div class="">
+            <input type="text" class="invisible" value="ABC" id="ip_invis" />
+            @*<div class="col-xs-6">
+                    <a href="#addEmployeeModal" class="btn btn-success" data-toggle="modal"><i class="material-icons">&#xE147;</i> <span>Add New Employee</span></a>
+                    <a href="#deleteEmployeeModal" class="btn btn-danger" data-toggle="modal"><i class="material-icons">&#xE15C;</i> <span>Delete</span></a>
+                </div>*@
+
+            @*class="table overflow-auto table-striped table-hover display"*@
+
+            <table class="table table-striped" id="user_tabel">
+                <thead>
+
+                    <tr>
+                        <th nowrap>User_Login</th>
+                        <th nowrap>User_Name</th>
+                        <th nowrap>Group ID</th>
+                        <th nowrap>Group Name</th>
+                        <th nowrap>Start_Date</th>
+                        <th nowrap>End_Date</th>
+                        <th nowrap>Active</th>
+                        <th nowrap>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td id="tbl_user_login" nowrap>@item.umm_user_login</td>
+                            <td id="tbl_user_name" nowrap>@item.umm_user_name</td>
+                            <td id="tbl_user_id">@item.umm_group_id</td>
+                            <td id="tbl_user_group">@item.umm_group_name</td>
+                            <td id="tbl_start_dt" nowrap>@item.umm_start_date</td>
+                            <td id="tbl_end_dt" nowrap>@item.umm_end_date</td>
+                            <td id="tbl_active" nowrap>@item.umm_active</td>
+                            <td nowrap>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#DetailModal" id="bt_add" data-group-ctrl_id="@item.umm_ctrl_user_sys_id" data-group-link-id="@item.umm_link_user_sys_id" data-group-username="@item.umm_user_name" data-group-run-job="@item.umm_group_run_job" data-group-create="@item.umm_group_create" data-group-mix-cc-clean="@item.umm_group_mix_cc_clean" data-group-mix-cc-check="@item.umm_group_mix_cc_check" data-group-operate="@item.umm_group_mix_operate" data-group-mix-check="@item.umm_group_mix_check">Detail</button>
+                                <button type="button" class="btn btn-warning " data-toggle="modal" id="bt_edit" data-target="#exampleModal" data-salesperson="@item.umm_ctrl_user_sys_id" data-background="@item.umm_link_user_sys_id" data-ed-login="@item.umm_user_login" data-username="@item.umm_user_name" data-group="@item.umm_group_name" data-startdt="@item.umm_start_date" data-enddt="@item.umm_end_date" data-userpree="@item.umm_user_pre">Edit</button>
+                                <button type="button" class="btn btn-warning" data-toggle="modal" id="bt_repass" data-target="#RsetPassModel" data-re-pass-ctrl-id="@item.umm_ctrl_user_sys_id" data-re-pass-l-id="@item.umm_link_user_sys_id">ResetPassword</button>
+                                <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#deleteEmployeeModal" data-de-salesperson="@item.umm_ctrl_user_sys_id" data-de-support="@item.umm_link_user_sys_id" data-del-login="@item.umm_user_login" data-del-username="@item.umm_user_name" data-del-groupid="@item.umm_group_id" id="bt_delete">Delete</button>
+
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+        @*Reset Password*@
+
+        <div class="modal fade" id="RsetPassModel" tabindex="-1" role="dialog" aria-labelledby="DRsetPassModelLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="RsetPassModelLabel">Reset Password</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <input type="text" class="form-control model-reset-ctl-id" id="rep_ctrl_id">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">New Password:</label>
+                                <input type="password" class="form-control" id="rep_new_pass">
+                                <div class="error_pass" style="font-size:medium;color:red;display:none">Password is null.</div>
+                            </div>
+
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success" id="bt_reset_pass_save">Enter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        @*detial*@
+
+        <div class="modal fade" id="DetailModal" tabindex="-1" role="dialog" aria-labelledby="DetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Detial</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Name:</label>
+                                <input type="text" class="form-control model-dt-user-name" id="dt_username" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Create:</label>
+                                <input type="text" class="form-control model-dt-group-create" id="dt_group_create" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Run Job:</label>
+                                <input type="text" class="form-control modal-dt-group-run-job" id="dt_ip_run_job" readonly>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Mixing CC Clean:</label>
+                                <input type="text" class="form-control modal-dt-group-mix-clean" id="dt_mix_clean" readonly>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Mixing CC Clean Check:</label>
+                                <input type="text" class="form-control modal-dt-group-mix-clean-check" id="dt_mix_clean_check" readonly>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Mixing Operate :</label>
+                                <input type="text" class="form-control modal-group-mix-operate" id="dt_mix_operate" readonly>
+
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Mixing Check:</label>
+                                <input type="text" class="form-control modal-group-mix-check" id="dt_mix_check" readonly>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*add group*@
+
+        <div class="modal fade" id="Modaladdgroup" tabindex="-1" role="dialog" aria-labelledby="Modaladdgroup" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tital">Add Group</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Name:</label>
+                                <input type="text" class="form-control model-salesperson" id="md_ip_group_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Description:</label>
+                                <input type="text" class="form-control modal-username" id="md_ip_group_desc">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถสร้าง BMR ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_create_bmr">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถสร้าง Run Job ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_run_job">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบความสะอาดของเครื่อง ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_check_clean">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบการบันทึกการทำความสะอาดเครื่องจักรเสร็จสมบูรณ์ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_check_clean_comp">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถ ปฏิบัติการ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_operate">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบกระบวนการผสมเสร็จสมบูรณ์ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_add_group_check_mixing_comp">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Active</label>
+                                <select class="custom-select" id="select_add_group_active">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="bt_add_group_close">Close</button>
+                        <button type="submit" class="btn btn-primary" id="bt_add_group_save">Enter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @*edit group*@
+        <div class="modal fade" id="Modaleditgroup" tabindex="-1" role="dialog" aria-labelledby="Modaleditgroup" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="tital">Edit Group</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Select Group</label>
+                                <select class="custom-select" id="select_group_edit">
+                                    <option selected>Choose...</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Name:</label>
+                                <input type="text" class="form-control  group-name" id="md_ip_group_edit_name">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group Description:</label>
+                                <input type="text" class="form-control group-desc" id="md_ip_group_edit_desc">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถสร้าง BMR ได้หรือไม่</label>
+                                <select class="custom-select select-createp-bmr" id="select_edit_group_create_bmr">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถสร้าง Run Job ได้หรือไม่</label>
+                                <select class="custom-select" id="select_edit_group_run_job">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบความสะอาดของเครื่อง ได้หรือไม่</label>
+                                <select class="custom-select" id="select_edit_group_check_clean">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบการบันทึกการทำความสะอาดเครื่องจักรเสร็จสมบูรณ์ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_edit_group_check_clean_comp">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถ ปฏิบัติการ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_edit_group_operate">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">สามารถตรวจสอบกระบวนการผสมเสร็จสมบูรณ์ ได้หรือไม่</label>
+                                <select class="custom-select" id="select_edit_group_check_mixing_comp">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Active</label>
+                                <select class="custom-select" id="select_edit_group_active">
+                                    <option selected value="0">Choose...</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="bt_add_group_close">Close</button>
+                        <button type="submit" class="btn btn-danger" data-toggle="modal" data-target="#deleteGroupModal">Delete</button>
+                        <button type="submit" class="btn btn-primary" id="bt_edit_group_save">Enter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- group Delete Modal HTML -->
+        <div id="deleteGroupModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Delete Group</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>You want to delete group ?</p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                            <button type="button" class="btn btn-danger" id="bt_edit_group_delete">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @*Edit*@
+
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Edit</h5>
+
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form>
+                            <div class="from-group invisible">
+                                <input type="text" class="form-control modal-metrics" id="md_ip_ctrl_sys_id">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Login:</label>
+                                <input type="text" class="form-control model-salesperson" id="md_ip_user_login">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Name:</label>
+                                <input type="text" class="form-control modal-username" id="me_ip_username">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Pre:</label>
+                                <input type="text" class="form-control modal-preeee" id="me_ip_pre">
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group:</label>
+                                <select class="custom-select" id="select_edit_group">
+                                    <option selected>Choose...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Start Date :</label>
+                                <input type="text" class="form-control modal-startdt mdedt-i-dateMNT" id="me_ip_start_dt">
+
+
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">End Date:</label>
+                                <input type="text" class="form-control modal-enddt mdedt-i-dateMNT" id="me_ip_end_dt">
+                            </div>
+                            <div class="from-group invisible">
+                                <input type="text" class="form-control modal-headshot" id="md_ip_link_sys_id">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="bt_edit_close">Close</button>
+                        <button type="submit" class="btn btn-primary" id="bt_edit_save">Enter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Modal HTML -->
+        <div id="addEmployeeModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Add User</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label>User Login</label>
+                                <input type="text" class="form-control" id="et_add_user_login" required>
+                            </div>
+                            <div class="form-group">
+                                <label>User Name</label>
+                                <input type="text" class="form-control" id="et_add_user_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Password</label>
+                                <input type="password" class="form-control" id="et_add_password" data-toggle="password" required>
+
+                            </div>
+                            <div class="form-group">
+                                <label>User pre</label>
+                                <input type="text" class="form-control" id="et_add_user_pre" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Group</label>
+
+                                <div class="input-group">
+
+                                    <select class="custom-select" id="select_add_group">
+                                        <option selected>Choose...</option>
+                                        @*@foreach (var item in Model)
+                                            {
+                                                <option value="@item.u">@item.umm_group_name</option>
+                                            }*@
+
+
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Start Date</label>
+                                    <input type="text" class="form-control mdedt-i-dateMNT" id="et_add_start_dt" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>End Date</label>
+                                    <input type="text" class="form-control mdedt-i-dateMNT" id="et_add_end_dt" required>
+                                </div>
+
+                                <div class="modal-footer">
+                                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel" id="bt_add_cancel">
+                                    <input type="submit" class="btn btn-success" value="Add" id="bt_add_save">
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Delete Modal HTML -->
+        <div id="deleteEmployeeModal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form>
+                        <div class="modal-header">
+                            <h4 class="modal-title">Delete Employee</h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="input-group invisible">
+                                <input type="text" class="form-control modal-del-ctrlsysid" id="md_ip_del_ctrl_sys_id">
+                                <input type="text" class="form-control modal-linksysid" id="md_ip_del_link_sys_id">
+                            </div>
+                            <p>Are you sure you want to delete these Records?</p>
+                            <p class="text-warning"><small>This action cannot be undone.</small></p>
+
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Login:</label>
+                                <input readonly type="text" class="form-control modal-logo" id="md_del_ip_user_login">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">User Name:</label>
+                                <input readonly type="text" class="form-control modal-industry" id="me_del_ip_username">
+                            </div>
+                            <div class="form-group">
+                                <label for="recipient-name" class="col-form-label">Group:</label>
+                                <input readonly type="text" class="form-control modal-salesCycle" id="me_del_ip_group">
+
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                            <button type="button" class="btn btn-danger" id="bt_del_save">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

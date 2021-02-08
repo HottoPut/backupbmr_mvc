@@ -1,0 +1,143 @@
+﻿<script>
+    $(document).ready(function () {
+        $('.i-date').datetimepicker({ format: 'DD/MM/YYYY HH:mm' });
+        $('#modalTMainClean').on('shown.bs.modal', function (e) {
+            $('#mdadc_div_job_sysid').text(e.relatedTarget.jobSysId);
+            $('#mdadc_div_step').text(e.relatedTarget.step);
+            $('#mdadc_div_no').text(e.relatedTarget.no);
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("GetClean", "Packing")',
+                data: '{"jobSysid":' + $('#mdadc_div_job_sysid').text() + ',"step":' + $('#mdadc_div_step').text() + ',"runNo":' + $('#mdadc_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data.GetClean[0] != null) {
+                        $('#mdc_i_bot_amount').val(data.GetClean[0].amountBot);
+                        $('#mdc_i_water_temp').val(data.GetClean[0].waterTemp);
+                        $('#mdc_i_bot_start').val(data.GetClean[0].botStartDt);
+                        $('#mdc_i_bot_end').val(data.GetClean[0].botEndDt);
+                        $('#mdc_i_lid_amount').val(data.GetClean[0].amountLid);
+                        $('#mdc_i_lid_start').val(data.GetClean[0].lidStartDt);
+                        $('#mdc_i_lid_end').val(data.GetClean[0].lidEndDt);
+                        $('#mdc_i_bake_amount').val(data.GetClean[0].amountBakeLid);
+                        $("#mdc_i_icbt_temp").val(data.GetClean[0].icbtTemp);
+                        $('#mdc_i_bake_start').val(data.GetClean[0].bakeStartDt);
+                        $('#mdc_i_bake_end').val(data.GetClean[0].bakeEndDt);
+                    }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+
+
+        });
+        $("body").on("click", "#mdadc_bt_save", function (e) {
+             $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("SaveClean", "Packing")',
+                 data: '{"jobSysid":' + $('#mdadc_div_job_sysid').text() + ',"step":' + $('#mdadc_div_step').text() + ',"runNo":' + $('#mdadc_div_no').text() + ',"amountBot":' + ($('#mdc_i_bot_amount').val().length > 0 ? $('#mdc_i_bot_amount').val() : 0) + ',"waterTemp":' + ($('#mdc_i_water_temp').val().length > 0 ? $('#mdc_i_water_temp').val() : 0) + ',"botStartDt":"' + $('#mdc_i_bot_start').val() + '","botEndDt":"' + $('#mdc_i_bot_end').val() + '","amountLid":' + ($('#mdc_i_lid_amount').val().length > 0 ? $('#mdc_i_lid_amount').val() : 0) + ',"lidStartDt":"' + $('#mdc_i_lid_start').val() + '","lidEndDt":"' + $('#mdc_i_lid_end').val() + '","amountBakeLid":' + ($('#mdc_i_bake_amount').val().length > 0 ? $('#mdc_i_bake_amount').val() : 0) + ',"icbtTemp":' + ($('#mdc_i_icbt_temp').val().length > 0 ? $('#mdc_i_icbt_temp').val():0) + ',"bakeStartDt":"' + $('#mdc_i_bake_start').val() + '","bakeEndDt":"' + $('#mdc_i_bake_end').val() + '"}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#modalTMainClean').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("#modalTMainClean").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainClean">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">ทำความสะอาด</h4>
+                <button type="button" id="mdadp_bt_close" class="mdadp-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadc_div_job_sysid" style="display:none" class="mdadp-div-job-sysid input-md"></div>
+                <div id="mdadc_div_step" style="display:none" class="mdadp-div-step input-md"></div>
+                <div id="mdadc_div_no" style="display:none" class="mdadp-div-no input-md"></div>
+                <!--Parameter-->
+
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">จำนวนขวดที่ล้าง / Amount</div>
+                        <div class="col-3"><input id="mdc_i_bot_amount" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">ขวด / Bottles</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">อุณหภูมิน้ำ / Water temperature</div>
+                        <div class="col-3"><input id="mdc_i_water_temp" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">°C</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">เวลาที่เริ้มล้าง / Start time</div>
+                        <div class="col-3"><input id="mdc_i_bot_start" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                        <div class="col-3">เวลาที่ล้างเสร็จ / Finished time</div>
+                        <div class="col-3"><input id="mdc_i_bot_end" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">จำนวนฝาที่ล้าง / Amount</div>
+                        <div class="col-3"><input id="mdc_i_lid_amount" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">ฝา / Caps</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">เวลาที่เริ้มล้าง / Start time</div>
+                        <div class="col-3"><input id="mdc_i_lid_start" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                        <div class="col-3">เวลาที่ล้างเสร็จ / Finished time</div>
+                        <div class="col-3"><input id="mdc_i_lid_end" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">จำนวนฝาที่อบ / Amount</div>
+                        <div class="col-3"><input id="mdc_i_bake_amount" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">ฝา / Caps</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">อุณหภูมิตู้อบ / Hot air oven temperature</div>
+                        <div class="col-3"><input id="mdc_i_icbt_temp" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">°C</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">เวลาที่เริ้มล้าง / Start time</div>
+                        <div class="col-3"><input id="mdc_i_bake_start" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                        <div class="col-3">เวลาที่ล้างเสร็จ / Finished time</div>
+                        <div class="col-3"><input id="mdc_i_bake_end" type="text" class="i-date input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <span class="error" style="color:red;display:none">Error</span>
+                    <button type="button" id="mdadc_bt_save" class="mdadc-bt-close mdadp-i-pressure bt-operate btn btn-success">Save</button>
+                    <button type="button" class="mdadc-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+                <!-- Modal footer -->
+            </div>
+    </div>
+</div>

@@ -1,0 +1,76 @@
+﻿<link href="~/Content/jquery.dataTables.min.css" rel="stylesheet" />
+<style type="text/css">
+    td.details-control {
+        background: url('https://datatables.net/examples/resources/details_open.png') no-repeat center center;
+        cursor: pointer;
+    }
+
+    tr.details td.details-control {
+        background: url('https://datatables.net/examples/resources/details_close.png') no-repeat center center;
+    }
+
+    .padding-0 {
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+</style>
+<script>
+    $(document).ready(function () {
+        var table = $('#TMxCC').DataTable({
+            dom: 't',
+            lengthMenu: [[10, 25, 50, -1], [10, 25, 50, "All"]],
+                        buttons: [
+                {
+                    className: 'btn btn-primary btn-sm',
+                    text: 'Create',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "ImportExcel"))';
+                    }
+                }, {
+                    className: 'btn btn-success btn-sm',
+                    text: 'Run Job',
+                    action: function (e, dt, node, config) {
+                         window.location.href = '@Html.Raw(Url.Action("Index", "RunJob"))';
+                    }
+                }
+            ],
+            "ajax": {
+                "url": '@Url.Action("GetCleanControl", "RunJob")',
+                "type": "POST",
+                "data": {
+                    "itemCode": $('#sp_item_code').text(),
+                    "revision": $('#sp_version').text()
+
+                }
+            },
+            "columns": [
+                //{
+                //    "className": 'details-control',
+                //    "orderable": false,
+                //    "data": null,
+                //    "defaultContent": ''
+                //},
+                //{ "data": "itemCode" },
+                { "data": "runNo" },
+                { "data": "equipmentNo" },
+                { "data": "equipmentName" },
+                { "data": "groupClean" },
+                { "data": "groupCheck" },
+                { "data":"reqImageYn"}
+            ],
+            //"order": [[1, 'asc']]
+        });
+    });
+</script>
+<table id="TMxCC" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Run No</th>
+            <th>Equipment No</th>
+            <th>Equipment Name</th>
+            <th>Group Clean</th>
+            <th>Group Check</th>
+            <th>Image YN</th>
+        </tr>
+    </thead>
+</table>

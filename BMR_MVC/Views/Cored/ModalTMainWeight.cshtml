@@ -1,0 +1,105 @@
+﻿<script>
+    $(document).ready(function () {
+        $('#modalTMainWeight').on('shown.bs.modal', function (e) {
+            $('#mdw_div_job_sysid').text(e.relatedTarget.jobSysId);
+            $('#mdw_div_step').text(e.relatedTarget.stepNo);
+            $('#mdw_div_no').text(e.relatedTarget.runNo);
+
+            
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetWeight", "Cored")',
+                data: '{"jobSysId":' + $('#mdw_div_job_sysid').text() + ',"step":' + $('#mdw_div_step').text() + ',"runNo":' + $('#mdw_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#mdw_i_tank').val(data.GetWeight[0].tankAmount);
+                    $('#mdw_i_net').val(data.GetWeight[0].netWeight);
+                    $('#mdw_i_theoritical').val(data.GetWeight[0].sTheoretical);
+                    $('#mdw_i_yield').val(data.GetWeight[0].sYield)
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("body").on("click", "#mdw_bt_save", function (e) {
+
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                url: '@Url.Action("SaveWeight", "Cored")',
+                data: '{"jobSysId":' + $('#mdw_div_job_sysid').text() + ',"step":' + $('#mdw_div_step').text() + ',"runNo":' + $('#mdw_div_no').text() + ',"tankAmount":' + $('#mdw_i_tank').val() + ',"net":' + $('#mdw_i_net').val() + ',"theoretical":' + $('#mdw_i_theoritical').val() + ',"yield":' + $('#mdw_i_yield').val() + '}',
+                contentType: "application/json; charset=utf-8",
+                 success: function (data) {
+                     $('#modalTMainWeight').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("#modalTMainWeight").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+            $('.input-md').text('');
+        });
+    });
+        
+</script>
+<div class="modal fade" id="modalTMainWeight">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">น้ำหนัก</h4>
+                <button type="button" id="mdadw_bt_close" class="mdadh-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdw_div_job_sysid" style="display:none" class="mdw-div-job-sysid input-md"></div>
+                <div id="mdw_div_step" style="display:none" class="mdw-div-step input-md"></div>
+                <div id="mdw_div_no" style="display:none" class="mdw-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">จำนวนถัง</div>
+                        <div class="col-3"><input id="mdw_i_tank" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">ถัง (Tank)</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">น้ำหนักสุทธิ</div>
+                        <div class="col-3"><input id="mdw_i_net" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">kg</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">น้ำหนักตามทฤษฎี</div>
+                        <div class="col-3"><input id="mdw_i_theoritical" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">kg</div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="col-3">คิดเป็น</div>
+                        <div class="col-3"><input id="mdw_i_yield" type="text" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="input-md form-control form-control-sm" /></div>
+                        <div class="col-3">%</div>
+                    </div>
+                </div>
+
+            </div>
+
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <span class="error" style="color:red;display:none">Error</span>
+                    <button type="button" id="mdw_bt_save" class="mdw-bt-close mdadt-i-temp bt-operate btn btn-success">Save</button>
+                    <button type="button" id="mdw_bt_close" class="mdw-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+    </div>
+</div>

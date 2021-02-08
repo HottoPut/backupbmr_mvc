@@ -1,0 +1,65 @@
+﻿<script>
+    $(document).ready(function () {
+        var chatPk = $.connection.pkSignalR;
+        $('#modalTMainApprJobQa').on('shown.bs.modal', function (e) {
+            $('#mdjqa_chk_job_sysid').text(e.relatedTarget.jobSysId);
+
+        });
+        $.connection.hub.start().done(function () {
+            $("body").on("click", "#mdjqa_bt_chk", function (e) {
+                var table = $('#example').DataTable();
+                console.log($('#mdjqa_chk_job_sysid').text() + '|' + $('#mdjqa_chk_i_password').val());
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'html',
+                    url: '@Url.Action("ApprQaJob", "Packing")',
+                    data: '{"jobSysId":' + $('#mdjqa_chk_job_sysid').text() + ',"password":"' + $('#mdjqa_chk_i_password').val() + '"}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        $('#modalTMainApprJobQa').modal('toggle');
+                        chatPk.server.send(0, 0, 0, 0, 0, 0, 0, 0);
+                        table.ajax.reload(null, false);
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError);
+                    }
+                });
+            });
+        });
+
+        $("#modalTMainApprJobQa").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+    });
+</script>
+<div class="modal fade" id="modalTMainApprJobQa">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Approve By</h4>
+                <button type="button" id="mdachk_bt_close" class="mdadt-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdjqa_chk_job_sysid" style="display:none" class="input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12"><input type="password" id="mdjqa_chk_i_password" class="input-md form-control form-control-sm" placeholder="Password" /></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdjqa_bt_chk" class="mdadt-bt-close btn btn-success">Check</button>
+                <button type="button" id="mdjqa_bt_close" class="mdadt-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

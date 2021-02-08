@@ -1,0 +1,799 @@
+﻿@using BMR_MVC;
+@model ViewModel
+@if (HttpContext.Current.Session["AUTH_CREATE"].ToString() == "True")
+{
+  <script src="~/Scripts/jquery.inputmask.min.js"></script>
+    <script src="~/Scripts/importexcel/Index.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="~/Scripts/moment.min.js"></script>
+    <script src="~/Scripts/bootstrap-datetimepicker.min.js"></script>
+    <link href="~/Scripts/bootstrap-datetimepicker.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <style type="text/css">
+        .hr-line-dashed {
+            border-top: 1px dashed #e7eaec;
+            color: #ffffff;
+            background-color: #ffffff;
+            height: 1px;
+            margin: 20px 0;
+        }
+    </style>
+    <script>
+
+        $(document).ready(function () {
+        $('#i_h_r').inputmask("R99-9/99.99.99");
+        $('[data-toggle="popover"]').popover({ trigger: 'hover', placement: 'bottom' }).click(function (e) { e.preventDefault(); });
+
+
+        AutoCompleteItemName();
+
+         $.ajax({
+                  type: 'POST',
+                  dataType: 'json',
+                    url: '@Url.Action("GetGroupDetail", "ImportExcel")',
+                    data: '{}',
+                    contentType: "application/json; charset=utf-8",
+             success: function (data) {
+                 for (var i = 0; i < data.Group.length; i++) {
+                     $('.sl-group').append('<option value="' + data.Group[i].gdi_group_id + '">' + data.Group[i].gdi_group_name + data.Group[i].gdi_group_desc + '</option>');
+                 }
+                  },
+                  error: function (xhr, ajaxOptions, thrownError) {
+                      console.log(thrownError);
+                  }
+              });
+
+
+
+        $('.mdedt-i-dateMNT').datetimepicker(
+            {
+                format: 'DD/MM/YYYY'
+                //format: 'DD-MM-YYYY'
+            }
+        );
+
+        $("body").on("click", "#bt_save_excel", function (e) {
+            if ($("#ip_itemCode").val().length > 0 && $("#ip_itemName").val().length > 0 && $('#i_h_r').val().length > 0) {
+                var trcleanControl = $('table#t_clean_control tr');
+                var trMix = $('table#t_mix tr');
+                var trPkCC = $('table#t_pk_clean_control tr');
+                var trPk = $('table#t_pk tr')
+                var trBcrCC = $('table#t_bcr_clean_control tr');
+                var trBcr = $('table#t_bcr tr');
+                var trBcaCC = $('table#t_bca_clean_control tr');
+                var trBca = $('table#t_bca tr');
+                var ip_itemcode = $('#ip_itemCode').val();
+                jDataTdCCObj = [];
+                for (var i = 1; i < trcleanControl.length; i++) {
+                    jDataTdCC = {};
+                    jDataTdCC["fgCode"] = trcleanControl.eq(i).find('#td_cc_fgcode').text();
+                    jDataTdCC["runNo"] = trcleanControl.eq(i).find('#td_cc_runno').text();
+                    jDataTdCC["equipmentNo"] = trcleanControl.eq(i).find('#td_cc_equipmentno').text();
+                    jDataTdCC["equipmentName"] = trcleanControl.eq(i).find('#td_cc_equipmentname').text();
+                    jDataTdCC["reqImageYn"] = trcleanControl.eq(i).find("#td_cc_reqimageyn").text();
+                    jDataTdCC["groupOp"] = trcleanControl.eq(i).find("#sl_mx_cc_group_operate option:selected").val();
+                    jDataTdCC["groupChk"] = trcleanControl.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdCCObj.push(jDataTdCC);
+                }
+                jDataTdMixObj = [];
+                for (var i = 1; i < trMix.length; i++) {
+                    jDataTdMix = {};
+                    jDataTdMix["fgCode"] = trMix.eq(i).find("#td_mix_fg_code").text();
+                    jDataTdMix["runNo"] = trMix.eq(i).find("#td_mix_run_no").text();
+                    jDataTdMix["step"] = trMix.eq(i).find("#td_mix_step").text();
+                    jDataTdMix["stepDesc"] = trMix.eq(i).find("#td_mix_stepdesc").text();
+                    jDataTdMix["stepDescEng"] = trMix.eq(i).find("#td_mix_stepdescEng").text();
+                    jDataTdMix["reqImageYn"] = trMix.eq(i).find("#td_mix_reqimageyn").text();
+                    jDataTdMix["groupOp"] = trMix.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdMix["groupChk"] = trMix.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdMix["reqHumidityYn"] = trMix.eq(i).find("#td_mix_reqhumidityyn").text();
+                    jDataTdMix["reqPressYn"] = trMix.eq(i).find("#td_mix_reqpressyn").text();
+                    jDataTdMix["reqTempYn"] = trMix.eq(i).find("#td_mix_reqtempyn").text();
+                    jDataTdMix["reqVaccYn"] = trMix.eq(i).find("#td_mix_reqvaccyn").text();
+                    jDataTdMix["reqStartStopYn"] = trMix.eq(i).find("#td_mix_reqstartstopyn").text();
+                    jDataTdMix["standardW"] = trMix.eq(i).find("#td_mix_standardw").text();
+                    jDataTdMix["reqWeightYn"] = trMix.eq(i).find("#td_mix_reqweight").text();
+                    jDataTdMix["reqWeightSampleYn"] = trMix.eq(i).find("#td_mix_reqweightsample").text();
+                    jDataTdMixObj.push(jDataTdMix);
+                }
+
+                jDataTdPKCCObj = [];
+                for (var i = 1; i < trPkCC.length; i++) {
+                    jDataTdPKCC = {};
+                    jDataTdPKCC["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdPKCC["runNo"] = trPkCC.eq(i).find('#td_pk_cc_runno').text();
+                    jDataTdPKCC["equipmentNo"] = trPkCC.eq(i).find("#td_pk_cc_equipmentno").text();
+                    jDataTdPKCC["equipmentName"] = trPkCC.eq(i).find("#td_pk_cc_equipmentname").text();
+                    jDataTdPKCC["groupOp"] = trPkCC.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdPKCC["groupChk"] = trPkCC.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdPKCC["reqImageYn"] = trPkCC.eq(i).find("#td_pk_cc_reqimageyn").text();
+                    jDataTdPKCCObj.push(jDataTdPKCC);
+                }
+
+                jDataTdPKObj = [];
+                for (var i = 1; i < trPk.length; i++) {
+                    jDataTdPK = {};
+                    jDataTdPK["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdPK["runNo"] = trPk.eq(i).find("#td_pk_run_no").text();
+                    jDataTdPK["step"] = trPk.eq(i).find("#td_pk_step").text();
+                    jDataTdPK["stepDesc"] = trPk.eq(i).find("#td_pk_stepdesc").text();
+                    jDataTdPK["stepDescEng"] = trPk.eq(i).find("#td_pk_stepdescEng").text();
+                    jDataTdPK["groupOp"] = trPk.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdPK["groupChk"] = trPk.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdPK["reqTempYn"] = trPk.eq(i).find("#td_pk_reqtempyn").text();
+                    jDataTdPK["reqPressYn"] = trPk.eq(i).find("#td_pk_reqpressyn").text();
+                    jDataTdPK["reqHumidityYn"] = trPk.eq(i).find("#td_pk_humudityyn").text();
+                    jDataTdPK["reqVaccYn"] = trPk.eq(i).find("#td_pk_reqvaccyn").text();
+                    jDataTdPK["reqStartStopYn"] = trPk.eq(i).find("#td_pk_reqstartstopyn").text();
+                    jDataTdPK["reqWeightYn"] = trPk.eq(i).find("#td_pk_reqweightyn").text();
+                    jDataTdPK["reqWeightSampleYn"] = trPk.eq(i).find("#td_pk_reqweightsample").text();
+                    jDataTdPK["reqImageYn"] = trPk.eq(i).find("#td_pk_reqimageyn").text();
+                    jDataTdPK["reqCleanYn"] = trPk.eq(i).find("#td_pk_reqclean").text();
+                    jDataTdPKObj.push(jDataTdPK);
+                }
+
+
+                jDataTdBcrCCObj = [];
+                for (var i = 1; i < trBcrCC.length; i++) {
+                    jDataTdBcrCC = {};
+                    jDataTdBcrCC["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdBcrCC["runNo"] = trBcrCC.eq(i).find('#td_bcr_cc_runno').text();
+                    jDataTdBcrCC["equipmentNo"] = trBcrCC.eq(i).find("#td_bcr_cc_equipmentno").text();
+                    jDataTdBcrCC["equipmentName"] = trBcrCC.eq(i).find("#td_bcr_cc_equipmentname").text();
+                    jDataTdBcrCC["groupOp"] = trBcrCC.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdBcrCC["groupChk"] = trBcrCC.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdBcrCC["reqImageYn"] = trBcrCC.eq(i).find("#td_bcr_cc_reqimageyn").text();
+                    jDataTdBcrCCObj.push(jDataTdBcrCC);
+                }
+
+                jDataTdBcrObj = [];
+                for (var i = 1; i < trBcr.length; i++) {
+                    jDataTdBcr = {};
+                    jDataTdBcr["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdBcr["runNo"] = trBcr.eq(i).find("#td_bcr_run_no").text();
+                    jDataTdBcr["step"] = trBcr.eq(i).find("#td_bcr_step").text();
+                    jDataTdBcr["stepDesc"] = trBcr.eq(i).find("#td_bcr_stepdesc").text();
+                    jDataTdBcr["stepDescEng"] = trBcr.eq(i).find("#td_bcr_stepdescEng").text();
+                    jDataTdBcr["groupOp"] = trBcr.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdBcr["groupChk"] = trBcr.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdBcr["reqTempYn"] = trBcr.eq(i).find("#td_bcr_reqtempyn").text();
+                    jDataTdBcr["reqPressYn"] = trBcr.eq(i).find("#td_bcr_reqpressyn").text();
+                    jDataTdBcr["reqHumidityYn"] = trBcr.eq(i).find("#td_bcr_humudityyn").text();
+                    jDataTdBcr["reqVaccYn"] = trBcr.eq(i).find("#td_bcr_reqvaccyn").text();
+                    jDataTdBcr["reqStartStopYn"] = trBcr.eq(i).find("#td_bcr_reqstartstopyn").text();
+                    jDataTdBcr["reqWeightYn"] = trBcr.eq(i).find("#td_bcr_reqweightyn").text();
+                    jDataTdBcr["reqWeightSampleYn"] = trBcr.eq(i).find("#td_bcr_reqweightsample").text();
+                    jDataTdBcr["reqImageYn"] = trBcr.eq(i).find("#td_bcr_reqimageyn").text();
+                    jDataTdBcrObj.push(jDataTdBcr);
+                }
+
+                jDataTdBcaCCObj = [];
+                for (var i = 1; i < trBcaCC.length; i++) {
+                    jDataTdBcaCC = {};
+                    jDataTdBcaCC["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdBcaCC["runNo"] = trBcaCC.eq(i).find('#td_bca_cc_runno').text();
+                    jDataTdBcaCC["equipmentNo"] = trBcaCC.eq(i).find("#td_bca_cc_equipmentno").text();
+                    jDataTdBcaCC["equipmentName"] = trBcaCC.eq(i).find("#td_bca_cc_equipmentname").text();
+                    jDataTdBcaCC["groupOp"] = trBcaCC.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdBcaCC["groupChk"] = trBcaCC.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdBcaCC["reqImageYn"] = trBcaCC.eq(i).find("#td_bca_cc_reqimageyn").text();
+                    jDataTdBcaCCObj.push(jDataTdBcaCC);
+                }
+
+                jDataTdBcaObj = [];
+                for (var i = 1; i < trBca.length; i++) {
+                    jDataTdBca = {};
+                    jDataTdBca["itemCode"] = $("#ip_itemCode").val();
+                    jDataTdBca["runNo"] = trBca.eq(i).find("#td_bca_run_no").text();
+                    jDataTdBca["step"] = trBca.eq(i).find("#td_bca_step").text();
+                    jDataTdBca["stepDesc"] = trBca.eq(i).find("#td_bca_stepdesc").text();
+                    jDataTdBca["stepDescEng"] = trBca.eq(i).find("#td_bca_stepdescEng").text();
+                    jDataTdBca["groupOp"] = trBca.eq(i).find("#sl_group_operate option:selected").val();
+                    jDataTdBca["groupChk"] = trBca.eq(i).find("#sl_group_check option:selected").val();
+                    jDataTdBca["reqTempYn"] = trBca.eq(i).find("#td_bca_reqtempyn").text();
+                    jDataTdBca["reqPressYn"] = trBca.eq(i).find("#td_bca_reqpressyn").text();
+                    jDataTdBca["reqHumidityYn"] = trBca.eq(i).find("#td_bca_humudityyn").text();
+                    jDataTdBca["reqVaccYn"] = trBca.eq(i).find("#td_bca_reqvaccyn").text();
+                    jDataTdBca["reqStartStopYn"] = trBca.eq(i).find("#td_bca_reqstartstopyn").text();
+                    jDataTdBca["reqWeightYn"] = trBca.eq(i).find("#td_bca_reqweightyn").text();
+                    jDataTdBca["reqWeightSampleYn"] = trBca.eq(i).find("#td_bca_reqweightsample").text();
+                    jDataTdBca["reqImageYn"] = trBca.eq(i).find("#td_bca_reqimageyn").text();
+                    jDataTdBcaObj.push(jDataTdBca);
+                }
+
+
+
+
+
+
+
+                $.ajax({
+                    type: 'POST',
+                    dataType: 'json',
+                    url: '@Url.Action("SaveTExcel", "ImportExcel")',
+                    //data: '{"itemCode":"' + $("#ip_itemCode").val() + '","version":"' + $("#ip_version").val() + '","start_dt":"' + $("#dp_date_start").val() + '","listExcelCleanControlRecordInfos":' + JSON.stringify(jDataTdCCObj) + ',"listExcelMixStepInfos":' + JSON.stringify(jDataTdMixObj) + ',"end_dt":"' + $("#dp_date_end").val() + '"}',
+                    data: '{"itemCode":"' + $("#ip_itemCode").val() + '","itemName":"' + $('#ip_itemName').val() + '","start_dt":"' + $("#dp_date_start").val() + '","revision":"' + $('#i_h_r').val() + '","listExcelCleanControlRecordInfos":' + JSON.stringify(jDataTdCCObj) + ',"listExcelMixStepInfos":' + JSON.stringify(jDataTdMixObj) + ',"end_dt":"' + $("#dp_date_end").val() + '","listExcelPKCleanControlRecordInfo":' + JSON.stringify(jDataTdPKCCObj) + ',"listExcelPKProcedureInfo":' + JSON.stringify(jDataTdPKObj) + ',"listExcelBcrCleanControlRecordInfo":' + JSON.stringify(jDataTdBcrCCObj) + ',"listExcelBcrProcedure":' + JSON.stringify(jDataTdBcrObj) + ',"listExcelBcaCleanControlRecordInfo":' + JSON.stringify(jDataTdBcaCCObj) + ',"listExcelBcaProcedureInfo":' + JSON.stringify(jDataTdBcaObj) + '}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data == 1) {
+                            alert('Import data complete');
+                            window.location.href = '@Html.Raw(Url.Action("Index", "Default"))';
+                        }
+                        else {
+                            alert("Revision นี้มีอยู่แล้ว")
+                        }
+                    },
+                    error: function (xhr, ajaxOptions, thrownError) {
+                        console.log(thrownError);
+                    }
+                });
+            }
+            else {
+                alert("กรอกข้อมูลไม่ครบ");
+            }
+
+        });
+
+
+
+            function AutoCompleteItemName() {
+            $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                url: '@Url.Action("GetItem", "ImportExcel")',
+                data: '{"itemName":"test"}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    var itemName = [];
+                    for (var i = 0; i < data.GetItemFG.length; i++) {
+                        itemName.push(data.GetItemFG[i].itemNameUom);
+                    }
+                    $('.i-item-name').autocomplete({
+                        //delay: 100,
+                        source: function (request, response) {
+                            var results = $.ui.autocomplete.filter(itemName, request.term);
+                            response(results.slice(0, 10));
+                        }, select: function (event, ui) {
+                            event.preventDefault();
+                            for (var i = 0; i < data.GetItemFG.length; i++) {
+                                if (data.GetItemFG[i].itemNameUom == ui.item.value) {
+                                    $('.i-item-code').val(data.GetItemFG[i].itemCode);
+                                    $('.i-item-name').val(data.GetItemFG[i].itemName);
+
+
+                                    $.ajax({
+                                        type: 'POST',
+                                        dataType: 'json',
+                                        url: '@Url.Action("GetRevision", "ImportExcel")',
+                                        data: '{"itemCode":"' + data.GetItemFG[i].itemCode + '"}',
+                                        contentType: "application/json; charset=utf-8",
+                                        success: function (data) {
+                                            if (data.length != null) {
+                                                $('#i_h_r').val(data);
+                                            }
+                                        },
+                                        error: function (xhr, ajaxOptions, thrownError) {
+                                            console.log(thrownError);
+                                        }
+                                    });
+
+                                }
+                            }
+                        }
+                    });
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+                });
+        }
+
+    });
+
+    </script>
+
+    <br />
+    <div class="card">
+        <div class="card-header">Import Excel</div>
+        <div class="card-body">
+
+
+            <div class="container col-md-12">
+                <div class="row">
+                    <div class="col-md-2 padding-5"><b>Item Code</b><input type="text" class="i-importexcel i-item-code form-control form-control-sm" id="ip_itemCode"></div>
+                    <div class="col-md-3 padding-5"><b>Item Name</b><input type="text" class="i-importexcel i-item-name form-control form-control-sm" id="ip_itemName"></div>
+                    <div class="col-md-2 padding-5"><b>Start Date</b><input type="text" class="form-control form-control-sm mdedt-i-dateMNT i-date-mnt" id="dp_date_start" /></div>
+                    <div class="col-md-2 padding-5"><b>End Date</b><input type="text" class="form-control form-control-sm mdedt-i-dateMNT i-date-mnt" id="dp_date_end" /></div>
+                    <div class="col-md-2"><b>Revision</b><input type="text"  id="i_h_r" class="form-control form-control-sm" /></div>
+                    <div>
+                        <button class="btn btn-success" style="margin-top:20px" id="bt_save_excel">Save</button>
+                    </div>
+                </div>
+            </div>
+            <div class="hr-line-dashed"></div>
+            <!---------------------------------Mix--------------------------------->
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Mixing Clean Control</b></div>
+                @*<div class="col-2"><input type="text" id="i_mx_cc_r" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <table class="table overflow-auto table-striped t-clean-control" id="t_clean_control" style="font-size:10pt">
+                <tr>
+                    <th>RUN_NO</th>
+                    <th>EQUIPMENT_NO</th>
+                    <th>EQUIPMENT_NAME</th>
+                    <th>GROUP_OPERATE</th>
+                    <th>GROUP_CHECk</th>
+                    <th>REQ_IMAGE_YN</th>
+                </tr>
+                @{int i = 0;}
+                @foreach (ExcelCleanControlRecordInfo excelClean in Model.ExcelCleanControlRecordInfoss)
+                {
+
+                    <tr>
+                        <td id="td_cc_runno">@excelClean.runNo</td>
+                        <td id="td_cc_equipmentno">@excelClean.equipmentNo</td>
+                        <td id="td_cc_equipmentname">@excelClean.equipmentName</td>
+                        <td>
+                            <select style="width:200px" id="sl_mx_cc_group_operate" class="sl-mx-cc-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:200px" id="sl_group_check" class="sl-mx-cc-check-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td id="td_cc_reqimageyn">@excelClean.reqImageYn</td>
+                        <td style="display:none">
+                            <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-mx-cc-group').eq(@i).val(@excelClean.groupOp);
+                                    $('.sl-mx-cc-check-group').eq(@i).val(@excelClean.groupChk);
+                                @{i++;}
+                                }
+                            });
+                            </script>
+                        </td>
+                    </tr>
+
+                }
+            </table>
+
+            <div class="hr-line-dashed"></div>
+
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Mix Procdure</b></div>
+                @*<div class="col-2"><input type="text" id="i_mx_r" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <table class="table overflow-auto table-striped t-mix" id="t_mix" style="font-size:10pt">
+                <tr>
+                    <th>STEP</th>
+                    <th>RUN_NO</th>
+                    <th>STEP_DESC</th>
+                    <th>STEP_DESC_ENG</th>
+                    <th>GROUP_OPERATE</th>
+                    <th>GROUP_CHECK</th>
+                </tr>
+                @{int j = 0;}
+                @foreach (ExcelMixStepInfo excelMix in Model.ExcelMixStepInfoss)
+                {
+                    <tr>
+                        <td id="td_mix_step">@excelMix.step</td>
+                        <td id="td_mix_run_no">@excelMix.runNo</td>
+                        <td class="col-4" id="td_mix_stepdesc">
+                            @Html.Raw("<a href='#' data-toggle='popover' data-html='true' style='color:black' data-content='<u><B>Image</B></u> : "+(excelMix.reqImageYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Humidity</b></u> : "+(excelMix.reqHumidityYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Pressure</b></u> : "+(excelMix.reqPressYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Temp</b></u> : "+(excelMix.reqTempYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Vacuum</b></u> : "+(excelMix.reqVaccYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>StartStop</b></u> : "+(excelMix.reqStartStopYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Weight</b></u> : "+(excelMix.reqWeightYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Amount Sample</b></u> : "+(excelMix.reqWeightSampleYn=="Y"?"Y":"N")+"<br/>"+
+"'>"+excelMix.stepDesc+"</a>")
+                        </td>
+                        <td class="col-4" id="td_mix_stepdescEng">@excelMix.stepDescEng</td>
+                        <td>
+                            <select style="width:200px" id="sl_group_operate" class="sl-mx-op-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:200px" id="sl_group_check" class="sl-mx-chk-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td style="display:none">
+                            <div>
+                                <span>Image : </span>@(excelMix.reqImageYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqimageyn'>" + @excelMix.reqImageYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqimageyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Humidity : </span>@(excelMix.reqHumidityYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqhumidityyn'>" + @excelMix.reqHumidityYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqhumidityyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Pressure : </span>@(excelMix.reqPressYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqpressyn'>" + @excelMix.reqPressYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqpressyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Temp : </span>@(excelMix.reqTempYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqtempyn'>" + @excelMix.reqTempYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqtempyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Vacuum : </span>@(excelMix.reqVaccYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqvaccyn'>" + @excelMix.reqVaccYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqvaccyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>StartStop : </span>@(excelMix.reqStartStopYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqstartstopyn'>" + @excelMix.reqStartStopYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqstartstopyn'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Weight : </span>@(excelMix.reqWeightYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqweight'>" + @excelMix.reqWeightYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqweight'>N</span>"))
+                            </div>
+                            <div>
+                                <span>Amount Sample : </span>@(excelMix.reqWeightSampleYn == "Y" ? Html.Raw("<span style='color: green' id='td_mix_reqweightsample'>" + @excelMix.reqWeightSampleYn + "</span>") : Html.Raw("<span style='color:red' id='td_mix_reqweightsample'>N</span>"))
+                            </div>
+                        </td>
+                        <td style="display:none">
+                            <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-mx-op-group').eq(@j).val(@excelMix.groupOp);
+                                    $('.sl-mx-chk-group').eq(@j).val(@excelMix.groupChk);
+                                @{j++;}
+                                }
+                            });
+                            </script>
+                        </td>
+                    </tr>
+                }
+            </table>
+            <!---------------------------------Mix--------------------------------->
+            <!---------------------------------Cored------------------------------->
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Compressing Clean Control</b></div>
+                @*<div class="col-2"><input type="text" id="i_bcr_cc_r" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <table class="table overflow-auto table-striped t-pk-clean-control" id="t_bcr_clean_control" style="font-size:10pt">
+                <tr>
+                    <th>RUN_NO</th>
+                    <th>EQUIPMENT_NO</th>
+                    <th>EQUIPMENT_NAME</th>
+                    <th>GROUP_OPERATE</th>
+                    <th>GROUP_CHECK</th>
+                    <th>REQ_IMAGE_YN</th>
+                </tr>
+                @{int b = 0;}
+                @foreach (ExcelBcrCleanControlRecordInfo excelBcrClean in Model.ExcelBcrCleanControlRecordInfos)
+                {
+                    <tr>
+                        <td id="td_bcr_cc_runno">@excelBcrClean.runNo</td>
+                        <td id="td_bcr_cc_equipmentno">@excelBcrClean.equipmentNo</td>
+                        <td id="td_bcr_cc_equipmentname">@excelBcrClean.equipmentName</td>
+                        <td>
+                            <select style="width:200px" id="sl_group_operate" class="sl-bcr-cc-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:200px" id="sl_group_check" class="sl-bcr-cc-check-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td id="td_bcr_cc_reqimageyn">@excelBcrClean.reqImageYn</td>
+                        <td style="display:none">
+                            <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-bcr-cc-group').eq(@b).val(@excelBcrClean.groupOp);
+                                    $('.sl-bcr-cc-check-group').eq(@b).val(@excelBcrClean.groupChk);
+                                @{b++;}
+                                }
+                            });
+                            </script>
+                        </td>
+                    </tr>
+                }
+            </table>
+
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Compressing Procedure</b></div>
+                @*<div class="col-2"><input type="text" id="i_bcr_r" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <div class="table-responsive">
+                <table class="table overflow-auto table-striped t-pk" id="t_bcr" style="font-size:10pt">
+                    <tr>
+                        <th>STEP</th>
+                        <th>RUN_NO</th>
+                        <th>STEP_DESC</th>
+                        <th>STEP_DESC_ENG</th>
+                        <th>GROUP_OPERATE</th>
+                        <th>GROUP_CHECK</th>
+                    </tr>
+                    @{int c = 0;}
+                    @foreach (ExcelBcrProcedureInfo excelBcr in Model.ExcelBcrProcedureInfos)
+                    {
+                        <tr>
+                            <td id="td_bcr_step">@excelBcr.step</td>
+                            <td id="td_bcr_run_no">@excelBcr.runNo</td>
+                            <td class="col-4" id="td_bcr_stepdesc">
+                                @Html.Raw("<a href='#' data-toggle='popover' data-html='true' style='color:black' data-content='<u><B>Image</B></u> : "+(excelBcr.reqImageYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Humidity</b></u> : "+(excelBcr.reqHumidityYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Pressure</b></u> : "+(excelBcr.reqPressYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Temp</b></u> : "+(excelBcr.reqTempYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Vacuum</b></u> : "+(excelBcr.reqVaccYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>StartStop</b></u> : "+(excelBcr.reqStartStopYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Weight</b></u> : "+(excelBcr.reqWeightYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Amount Sample</b></u> : "+(excelBcr.reqWeightSampleYn=="Y"?"Y":"N")+"<br/>"+
+"'>"+excelBcr.stepDesc+"</a>")
+                            </td>
+                            <td class="col-4" id="td_bcr_stepdescEng">@excelBcr.stepDescEng</td>
+                            <td>
+                                <select style="width:200px" id="sl_group_operate" class="sl-bcr-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select style="width:200px" id="sl_group_check" class="sl-bcr-check-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td id="td_bcr_reqimageyn" style="display:none">@(excelBcr.reqImageYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_humudityyn" style="display:none">@(excelBcr.reqHumidityYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqpressyn" style="display:none">@(excelBcr.reqPressYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqtempyn" style="display:none">@(excelBcr.reqTempYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqvaccyn" style="display:none">@(excelBcr.reqVaccYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqstartstopyn" style="display:none">@(excelBcr.reqStartStopYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqweightyn" style="display:none">@(excelBcr.reqWeightYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bcr_reqweightsample" style="display:none">@(excelBcr.reqWeightSampleYn == "Y" ? "Y" : "N")</td>
+                            <td style="display:none">
+                                <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-bcr-group').eq(@c).val(@excelBcr.groupOp);
+                                    $('.sl-bcr-check-group').eq(@c).val(@excelBcr.groupChk);
+                                @{c++;}
+                                }
+                            });
+                                </script>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <!---------------------------------Cored------------------------------->
+            <!---------------------------------Coated------------------------------>
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Coating Clean Control</b></div>
+                @*<div class="col-2"><input type="text" id="i_bca_cc_r" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <table class="table overflow-auto table-striped t-pk-clean-control" id="t_bca_clean_control" style="font-size:10pt">
+                <tr>
+                    <th>RUN_NO</th>
+                    <th>EQUIPMENT_NO</th>
+                    <th>EQUIPMENT_NAME</th>
+                    <th>GROUP_OPERATE</th>
+                    <th>GROUP_CHECK</th>
+                    <th>REQ_IMAGE_YN</th>
+                </tr>
+                @{int d = 0;}
+                @foreach (ExcelBcaCleanControlRecordInfo excelBcaClean in Model.ExcelBcaCleanControls)
+                {
+                    <tr>
+                        <td id="td_bca_cc_runno">@excelBcaClean.runNo</td>
+                        <td id="td_bca_cc_equipmentno">@excelBcaClean.equipmentNo</td>
+                        <td id="td_bca_cc_equipmentname">@excelBcaClean.equipmentName</td>
+                        <td>
+                            <select style="width:200px" id="sl_group_operate" class="sl-bca-cc-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:200px" id="sl_group_check" class="sl-bca-cc-check-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td id="td_bca_cc_reqimageyn">@excelBcaClean.reqImageYn</td>
+                        <td style="display:none">
+                            <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-bca-cc-group').eq(@d).val(@excelBcaClean.groupOp);
+                                    $('.sl-bca-cc-check-group').eq(@d).val(@excelBcaClean.groupChk);
+                                @{d++;}
+                                }
+                            });
+                            </script>
+                        </td>
+                    </tr>
+                }
+            </table>
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Coating Procedure</b></div>
+                @*<div class="col-2"><input type="text" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <div class="table-responsive">
+                <table class="table overflow-auto table-striped t-pk" id="t_bca" style="font-size:10pt">
+                    <tr>
+                        <th>STEP</th>
+                        <th>RUN_NO</th>
+                        <th>STEP_DESC</th>
+                        <th>STEP_DESC_ENG</th>
+                        <th>GROUP_OPERATE</th>
+                        <th>GROUP_CHECK</th>
+                    </tr>
+                    @{int e = 0;}
+                    @foreach (ExcelBcaProcedureInfo excelBca in Model.ExcelBcaProcedureInfos)
+                    {
+                        <tr>
+                            <td id="td_bca_step">@excelBca.step</td>
+                            <td id="td_bca_run_no">@excelBca.runNo</td>
+                            <td class="col-4" id="td_bca_stepdesc">
+                                @Html.Raw("<a href='#' data-toggle='popover' data-html='true' style='color:black' data-content='<u><B>Image</B></u> : "+(excelBca.reqImageYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Humidity</b></u> : "+(excelBca.reqHumidityYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Pressure</b></u> : "+(excelBca.reqPressYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Temp</b></u> : "+(excelBca.reqTempYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Vacuum</b></u> : "+(excelBca.reqVaccYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>StartStop</b></u> : "+(excelBca.reqStartStopYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Weight</b></u> : "+(excelBca.reqWeightYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Amount Sample</b></u> : "+(excelBca.reqWeightSampleYn=="Y"?"Y":"N")+"<br/>"+
+"'>"+excelBca.stepDesc+"</a>")
+                            </td>
+                            <td class="col-4" id="td_bca_stepdescEng">@excelBca.stepDescEng</td>
+                            <td>
+                                <select style="width:200px" id="sl_group_operate" class="sl-bca-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select style="width:200px" id="sl_group_check" class="sl-bca-check-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td id="td_bca_reqimageyn" style="display:none">@(excelBca.reqImageYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_humudityyn" style="display:none">@(excelBca.reqHumidityYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqpressyn" style="display:none">@(excelBca.reqPressYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqtempyn" style="display:none">@(excelBca.reqTempYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqvaccyn" style="display:none">@(excelBca.reqVaccYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqstartstopyn" style="display:none">@(excelBca.reqStartStopYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqweightyn" style="display:none">@(excelBca.reqWeightYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_bca_reqweightsample" style="display:none">@(excelBca.reqWeightSampleYn == "Y" ? "Y" : "N")</td>
+                            <td style="display:none">
+                                <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-bca-group').eq(@e).val(@excelBca.groupOp);
+                                    $('.sl-bca-check-group').eq(@e).val(@excelBca.groupChk);
+                                @{e++;}
+                                }
+                            });
+                                </script>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <!---------------------------------Coated------------------------------>
+            <!---------------------------------Pack-------------------------------->
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Packing Clean Control</b></div>
+                @*<div class="col-2"><input type="text" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <table class="table overflow-auto table-striped t-pk-clean-control" id="t_pk_clean_control" style="font-size:10pt">
+                <tr>
+                    <th>RUN_NO</th>
+                    <th>EQUIPMENT_NO</th>
+                    <th>EQUIPMENT_NAME</th>
+                    <th>GROUP_OPERATE</th>
+                    <th>GROUP_CHECK</th>
+                    <th>REQ_IMAGE_YN</th>
+                </tr>
+                @{int k = 0;}
+                @foreach (ExcelPKCleanControlRecordInfo excelPkClean in Model.ExcelPKCleanControlRecordInfos)
+                {
+                    <tr>
+                        <td id="td_pk_cc_runno">@excelPkClean.runNo</td>
+                        <td id="td_pk_cc_equipmentno">@excelPkClean.equipmentNo</td>
+                        <td id="td_pk_cc_equipmentname">@excelPkClean.equipmentName</td>
+                        <td>
+                            <select style="width:200px" id="sl_group_operate" class="sl-pk-cc-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select style="width:200px" id="sl_group_check" class="sl-pk-cc-check-group sl-group form-control form-control-sm">
+                                <option disabled selected value>Group</option>
+                            </select>
+                        </td>
+                        <td id="td_pk_cc_reqimageyn">@excelPkClean.reqImageYn</td>
+                        <td style="display:none">
+                            <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-pk-cc-group').eq(@k).val(@excelPkClean.groupOp);
+                                    $('.sl-pk-cc-check-group').eq(@k).val(@excelPkClean.groupChk);
+                                @{k++;}
+                                }
+                            });
+                            </script>
+                        </td>
+                    </tr>
+                }
+            </table>
+
+            <div class="hr-line-dashed"></div>
+            <div class="row">
+                <div class="col-2" style="color:red;white-space: nowrap;"><b>Packing Procedure</b></div>
+                @*<div class="col-2"><input type="text" data-mask="R9-9/99.99.99" class="form-control form-control-sm" /></div>*@
+            </div><br />
+            <div class="table-responsive">
+                <table class="table overflow-auto table-striped t-pk" id="t_pk" style="font-size:10pt">
+                    <tr>
+                        <th>STEP</th>
+                        <th>RUN_NO</th>
+                        <th>STEP_DESC</th>
+                        <th>STEP_DESC_ENG</th>
+                        <th>GROUP_OPERATE</th>
+                        <th>GROUP_CHECK</th>
+                    </tr>
+                    @{int a = 0;}
+                    @foreach (ExcelPKProcedureInfo excelPK in Model.ExcelPKProcedureInfos)
+                    {
+                        <tr>
+                            <td id="td_pk_step">@excelPK.step</td>
+                            <td id="td_pk_run_no">@excelPK.runNo</td>
+                            <td class="col-4" id="td_pk_stepdesc">
+                                @Html.Raw("<a href='#' data-toggle='popover' data-html='true' style='color:black' data-content='<u><B>Image</B></u> : "+(excelPK.reqImageYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Humidity</b></u> : "+(excelPK.reqHumidityYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Pressure</b></u> : "+(excelPK.reqPressYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Temp</b></u> : "+(excelPK.reqTempYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Vacuum</b></u> : "+(excelPK.reqVaccYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>StartStop</b></u> : "+(excelPK.reqStartStopYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Weight</b></u> : "+(excelPK.reqWeightYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Amount Sample</b></u> : "+(excelPK.reqWeightSampleYn=="Y"?"Y":"N")+"<br/>"+
+"<u><b>Clean</b></u> : " + (excelPK.reqCleanYn == "Y" ? "Y" : "N") + "<br/>" +
+"'>"+excelPK.stepDesc+"</a>")
+                            </td>
+                            <td class="col-4" id="td_pk_stepdescEng">@excelPK.stepDescEng</td>
+                            <td>
+                                <select style="width:200px" id="sl_group_operate" class="sl-pk-op-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select style="width:200px" id="sl_group_check" class="sl-pk-check-group sl-group form-control form-control-sm">
+                                    <option disabled selected value>Group</option>
+                                </select>
+                            </td>
+                            <td id="td_pk_reqimageyn" style="display:none">@(excelPK.reqImageYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_humudityyn" style="display:none">@(excelPK.reqHumidityYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqpressyn" style="display:none">@(excelPK.reqPressYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqtempyn" style="display:none">@(excelPK.reqTempYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqvaccyn" style="display:none">@(excelPK.reqVaccYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqstartstopyn" style="display:none">@(excelPK.reqStartStopYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqweightyn" style="display:none">@(excelPK.reqWeightYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqweightsample" style="display:none">@(excelPK.reqWeightSampleYn == "Y" ? "Y" : "N")</td>
+                            <td id="td_pk_reqclean" style="display:none">@(excelPK.reqCleanYn == "Y" ? "Y" : "N")</td>
+                            <td style="display:none">
+                                <script type="text/javascript">
+                            $(document).on({
+                                ajaxSuccess: function () {
+                                    $('.sl-pk-op-group').eq(@a).val(@excelPK.groupOp);
+                                    $('.sl-pk-check-group').eq(@a).val(@excelPK.groupChk);
+                                @{a++;}
+                                }
+                            });
+                                </script>
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </div>
+            <!---------------------------------Pack-------------------------------->
+        </div>
+    </div>
+}
+else
+{
+    Response.Redirect("~/Default/Index");
+}

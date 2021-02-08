@@ -1,0 +1,107 @@
+﻿@*<script src="~/Scripts/jasny-bootstrap.min.js"></script>*@
+<script>
+    $(document).ready(function () {
+
+        var authDisableBmr = JSON.parse('@HttpContext.Current.Session["AUTH_DISABLE_BMR"].ToString().ToLower()');
+        $('.bmr-date').datetimepicker({ format: 'DD/MM/YYYY' });
+
+        $('#modalEdtBmr').on('shown.bs.modal', function (e) {
+            $('#md_edt_bmr_item_code').val(e.relatedTarget.itemCode);
+            $('#md_edt_bmr_item_name').val(e.relatedTarget.itemName);
+            $('#md_edt_bmr_start_dt').val(e.relatedTarget.startDate);
+            $('#md_edt_bmr_end_dt').val(e.relatedTarget.endDate);
+            $('#md_edt_bmr_version').val(e.relatedTarget.version);
+            $('#sl_status_bmr').val(e.relatedTarget.statusBmr);
+        });
+        $("body").on("click", "#mdedt_bmr_bt_save", function (e) {
+                $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                    url: '@Url.Action("UpdateBmrHead", "RunJob")',
+                    data: '{"itemCode":"' + $('#md_edt_bmr_item_code').val() + '","revision":"' + $('#md_edt_bmr_version').val() + '","statusBmr":' + $('#sl_status_bmr option:selected').val() + ',"startDt":"' + $('#md_edt_bmr_start_dt').val() + '","endDt":"' + $('#md_edt_bmr_end_dt').val() + '"}',
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        $('#sp_start_dt').text($('#md_edt_bmr_start_dt').val());
+                        $('#sp_end_dt').text($('#md_edt_bmr_end_dt').val());
+                        if ($('#sl_status_bmr option:selected').val() == 1) {
+                            $('#status_bmr').html((authDisableBmr == true ? "<button class='btn btn-sm btn-primary' id='bt_edit_bmr'>Edit</button>" : '') + (' <button class="btn btn-sm btn-success" value="1" id="bt_status_bmr">ใช้งาน</button>'));
+                        }
+                        else {
+                            $('#status_bmr').html((authDisableBmr == true ? "<button class='btn btn-sm btn-primary' id='bt_edit_bmr'>Edit</button>" : '') + ' <button class="btn btn-sm btn-secondary" value="0" id="bt_status_bmr">ไม่ใช้งาน</button>');
+                        }
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+    });
+</script>
+<div class="modal fade" id="modalEdtBmr">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">แก้ไข BMR</h4>
+                <button type="button" id="md_bt_close" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">Item Code</div>
+                        <div class="col-6"><input type="text" id="md_edt_bmr_item_code" readonly="readonly" class="input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">Item Name</div>
+                        <div class="col-6"><input type="text" id="md_edt_bmr_item_name" readonly="readonly" class="input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">Version</div>
+                        <div class="col-6"><input type="text" id="md_edt_bmr_version" readonly="readonly" class="input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">เริ่มวันที่</div>
+                        <div class="col-6"><input type="text" id="md_edt_bmr_start_dt" class="bmr-date input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">ถึงวันที่</div>
+                        <div class="col-6"><input type="text" id="md_edt_bmr_end_dt" class="bmr-date input-md form-control form-control-sm" /></div>
+                    </div>
+                </div>
+                <div class="hr-line-dashed"></div>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-3">สถานะ</div>
+                        <div class="col-6">
+                            <select id="sl_status_bmr" class="form-control form-control-sm">
+                                <option value="1">ใช้งาน</option>
+                                <option value="0">ไม่ใช้งาน</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdedt_bmr_bt_save" class="btn btn-success" data-dismiss="modal">Save</button>
+                <button type="button" id="mdedt_bmr_bt_close" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

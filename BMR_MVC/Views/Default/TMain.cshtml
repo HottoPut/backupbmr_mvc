@@ -1,0 +1,72 @@
+﻿@model List<BMR_MVC.Models.JobInfo>
+@*<table id="example" class="table table-striped table-bordered dt-responsive dataTable no-footer dtr-inline collapsed" style="width: 100%;">
+    <thead>
+        <tr role="row">
+            <th class="sorting_asc nowrap"></th>
+            <th class="sorting nowrap">Item Code</th>
+            <th class="sorting nowrap">Item Name</th>
+            <th class="sorting nowrap">Lot</th>
+            <th class="sorting nowrap">Batch Size</th>
+            <th class="sorting nowrap">User Progress</th>
+            <th class="sorting nowrap">QA Progress</th>
+            <th class="sorting nowrap" style="display: none;">E-mail</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr role="row" class="odd">
+                <td class="dtr-control sorting_1" tabindex="0" style="">Gloria</td>
+                <td>@item.itemCode</td>
+                <td>@item.itemName</td>
+                <td>@item.lot</td>
+                <td>@item.batchSzie</td>
+                <td>test5</td>
+                <td>test6</td>
+                <td style="display: none;">g.little@datatables.net</td>
+            </tr>
+        }
+        </tbody>
+</table>*@
+<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            @*<th></th>*@
+            <th></th>
+            <th style="display:none"></th>
+            @*<th>Item Code</th>*@
+            <th>Item Name</th>
+            @*<th>Version</th>*@
+            <th>Lot</th>
+            <th>Batch Size</th>
+            <th>Start Dt</th>
+            <th>End Dt</th>
+            <th>User Progress</th>
+            <th>QA Progress</th>
+            <th>PD</th>
+            <th>QA</th>
+            @if (HttpContext.Current.Session["AUTH_EDIT_JOB"].ToString() == "True")
+            {
+                <th>Action</th>
+            }
+            else
+            {
+                <th style="display:none">Action</th>
+            }
+        </tr>
+    </thead>
+    @*<tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td class="details-control dtr-control"></td>
+                <td>@item.itemCode</td>
+                <td>@item.itemName</td>
+                <td>@item.lot</td>
+                <td>@item.batchSzie</td>
+                <td></td>
+                <td></td>
+            </tr>
+        }
+        </tbody>*@
+</table>

@@ -1,0 +1,83 @@
+﻿<script>
+    $(document).ready(function () {
+
+
+        var authMXOperate = '@HttpContext.Current.Session["AUTH_MIXING_OPERATE"].ToString()';
+        checkAuthOperate();
+
+        $('#modalTMainVacuum').on('shown.bs.modal', function (e) {
+             $.ajax({
+                type: 'POST',
+                dataType: 'json',
+                 url: '@Url.Action("GetVacuum", "Default")',
+                 data: '{"jobSysid":' + $('#mdadv_div_job_sysid').text() + ',"step":' + $('#mdadv_div_step').text() + ',"runNo":' + $('#mdadv_div_no').text() + '}',
+                contentType: "application/json; charset=utf-8",
+                   success: function (data) {
+                       $('#mdadv_i_vacuum').val(data);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("body").on("click", "#mdadv_bt_save", function (e) {
+            $.ajax({
+                type: 'POST',
+                dataType: 'html',
+                url: '@Url.Action("SaveVacuum", "Default")',
+                data: '{"jobSysid":' + $('#mdadv_div_job_sysid').text() + ',"step":' + $('#mdadv_div_step').text() + ',"runNo":' + $('#mdadv_div_no').text() + ',"vacuum":' + $('#mdadv_i_vacuum').val() + '}',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $('#modalTMainVacuum').modal('toggle');
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    console.log(thrownError);
+                }
+            });
+        });
+        $("#modalTMainVacuum").on("hidden.bs.modal", function (e) {
+            $('.input-md').val('');
+        });
+        function checkAuthOperate() {
+            if (JSON.parse(authMXOperate.toLowerCase()) == false) {
+                $('.i-operate').attr('disabled', 'disabled');
+                $('.bt-operate').attr('disabled', 'disabled');
+            }
+        }
+    });
+</script>
+<div class="modal fade" id="modalTMainVacuum">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Vacuum</h4>
+                <button type="button" id="mdadv_bt_close" class="mdadv-bt-close close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!--Parameter-->
+                <div id="mdadv_div_job_sysid" style="display:none" class="mdadv-div-job-sysid input-md"></div>
+                <div id="mdadv_div_step" style="display:none" class="mdadv-div-step input-md"></div>
+                <div id="mdadv_div_no" style="display:none" class="mdadv-div-no input-md"></div>
+                <!--Parameter-->
+
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-4">Vacuum rate ที่อ่านได้เท่ากับ / Vacuum rate</div>
+                        <div class="col-3"><input type="text" id="mdadv_i_vacuum" style="text-align:right" onkeypress="return isNumberKey(this, event);" class="mdadv-i-vacuum i-operate input-md form-control form-control-sm" /></div>
+                        <div>mm-Hg</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <span class="error" style="color:red;display:none">Error</span>
+                <button type="button" id="mdadv_bt_save" class="mdadv-bt-close mdadv-i-vacuum bt-operate btn btn-success">Save</button>
+                <button type="button" id="mdadv_bt_close" class="mdadv-bt-close btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
